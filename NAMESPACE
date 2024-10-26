@@ -1,0 +1,28 @@
+export("log_ml", "log_BF", "gelman.diag",
+       "plot.hmc_f", "mean.hmc_f", "vcov.hmc_f", "median.hmc_f", "quantile.hmc_f", "summary.hmc_f", "HPDinterval.hmc_f", "log_ml.hmc_f", 
+       "hmc.blm", "log_BF.blm", "predict.blm",
+       "hmc.blogit", "log_BF.blogit", "predict.blogit", 
+       "hmc.ologit", "log_BF.ologit", "predict.ologit", 
+       "hmc.mlogit", "log_BF.mlogit",
+       "hmc.poisson_exp", "log_BF.poisson", "predict.poisson", 
+       "hmc.usrfunc")
+useDynLib("hmcfortran")
+S3method("plot", "hmc_f")
+S3method("mean", "hmc_f")
+S3method("vcov", "hmc_f")
+S3method("median", "hmc_f")
+S3method("HPDinterval", "hmc_f")
+S3method("quantile", "hmc_f", quantile.hmc_f)
+S3method("summary", "hmc_f")
+S3method("log_ml", "hmc_f")
+S3method("log_BF", "blm")
+S3method("predict", "blm")
+S3method("log_BF", "blogit")
+S3method("predict", "blogit")
+S3method("log_BF", "ologit")
+S3method("predict", "ologit")
+S3method("log_BF", "mlogit")
+S3method("predict", "mlogit")
+S3method("log_BF", "poisson")
+S3method("predict", "poisson")
+S3method("gelman.diag", "hmc_f", gelman.diag.hmc_f)

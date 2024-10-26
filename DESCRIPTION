@@ -1,0 +1,10 @@
+Package: hmcfortran
+Type: Package
+Title: Hamiltonian Monte Carlo Method and Log-Likelihood Functions
+Version: 0.1
+Date: 2024-10-25
+Author: zombie, uncorrelated
+Maintainer: uncorrelated <uncorrelated@yahoo.co.jp>
+Description: This package serves Hamiltonian Monte Carlo Method and Log-Likelihood Functions written by Fortran. Currently this is an alpha version because I have not decide specifications of functions. 
+License: GPL 2.0
+Depends: R (>= 4.1.0), coda, parallel, doParallel, foreach
