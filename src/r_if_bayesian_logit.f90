@@ -18,7 +18,7 @@ subroutine hmc_fit_bayesian_logit(nr, nc, X, y, N, theta_sample, np, theta_init,
 		epsilons, adjustEpsilonsN, L, randlength, Sigma, constrain, seed, accept_r)
 end subroutine
 
-subroutine optim_bayesian_logit(nr, nc, X, y, np, p, nhp, hp, f, h)
+subroutine optim_bayesian_logit(nr, nc, X, y, np, p, nhp, hp, f, h, info)
 	use bayesian_logit
 	implicit none
 	integer, intent(in) :: nr, nc, np, nhp
@@ -28,12 +28,13 @@ subroutine optim_bayesian_logit(nr, nc, X, y, np, p, nhp, hp, f, h)
 	double precision, dimension(nhp), intent(in) :: hp
 	double precision, intent(out) :: f
 	double precision, dimension(np, np), intent(out) :: h
+	integer, intent(out) :: info
 	type(logit) :: this
 
-	call this%optim(nr, nc, X, y, np, p, nhp, hp, f, h)
+	call this%optim(nr, nc, X, y, np, p, nhp, hp, f, h, info)
 end subroutine
 
-subroutine log_ml_bayesian_logit(nr, nc, X, y, np, p, nhp, hp, r)
+subroutine log_ml_bayesian_logit(nr, nc, X, y, np, p, nhp, hp, r, info)
 	use bayesian_logit
 	implicit none
 	integer, intent(in) :: nr, nc, np, nhp
@@ -42,10 +43,11 @@ subroutine log_ml_bayesian_logit(nr, nc, X, y, np, p, nhp, hp, r)
 	double precision, dimension(np), intent(in) :: p
 	double precision, dimension(nhp), intent(in) :: hp
 	double precision, intent(out) :: r
+	integer, intent(out) :: info
 	type(logit) :: this
 
 	this%h = 1d-5
-	r = this%la_log_ml(nr, nc, X, y, np, p, nhp, hp)
+	call this%la_log_ml(nr, nc, X, y, np, p, nhp, hp, r, info)
 
 end subroutine
 

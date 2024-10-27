@@ -405,7 +405,7 @@ module hmc
 			
 	end subroutine
 
-	subroutine maximum_likelihood_method(this, nr, nc, X, y, np, p_lbfgsb, nhp, hp, f, h)
+	subroutine maximum_likelihood_method(this, nr, nc, X, y, np, p_lbfgsb, nhp, hp, f, h, info)
 		use lbfgsb_module
 		use iso_fortran_env, only: output_unit
 		implicit none
@@ -416,6 +416,7 @@ module hmc
 		! in: 初期値 out: 最適値
 		double precision, dimension(np), intent(inout) :: p_lbfgsb
 		double precision, dimension(nhp), intent(in) :: hp
+		integer, intent(out) :: info
 		integer :: i
 		double precision, parameter :: pi = 3.141592653589793115998
 	!!! L-BFGS-Bで利用する変数
@@ -459,7 +460,15 @@ module hmc
 			end if
 		end do
 
-		 ! 符号を反転
+		if(task(1:4) == 'CONV') then
+			info = 0
+		else if(task(1:4) == 'ABNO') then
+			info = 1
+		else ! task(1:5) == 'ERROR'
+			info = -1
+		end if
+
+		! 符号を反転
 		f = -f
 
 		! ヘッセ行列の計算
@@ -479,7 +488,7 @@ module hmc
 	end subroutine
 
 	! Laplace Approximated Log Marginal-Likelihood  
-	double precision function laplace_log_marginal_likelihood(this, nr, nc, X, y, np, init_p, nhp, hp) result(r)
+	subroutine laplace_log_marginal_likelihood(this, nr, nc, X, y, np, init_p, nhp, hp, r, error_code)
 		implicit none
 		class(model), intent(inout) :: this
 		integer, intent(in) :: nr, nc, np, nhp
@@ -488,6 +497,8 @@ module hmc
 		double precision, dimension(np), intent(in) :: init_p
 		double precision, dimension(nhp), intent(in) :: hp
 		double precision, parameter :: pi = 3.141592653589793115998
+		double precision, intent(out) :: r
+		integer, intent(out) :: error_code
 	!!! f: 最適値での値
 		double precision :: f
 		double precision, dimension(np) :: p
@@ -499,7 +510,7 @@ module hmc
 		integer :: LWORK, INFO
 
 		p = init_p
-		call maximum_likelihood_method(this, nr, nc, X, y, np, p, nhp, hp, f, h)
+		call maximum_likelihood_method(this, nr, nc, X, y, np, p, nhp, hp, f, h, error_code)
 
 		! ヘッセ行列の固有値を求める
 		LWORK = MAX(1, 3*np)
@@ -517,7 +528,7 @@ module hmc
 		! write(*, *) "np/2*dlog(dble(nr)", np/2*dlog(dble(nr))
 		! Σ⁻¹ = Hessian, then |Σ⁻¹| = 1/product(eigenvalues of Hessian)
 		r = f + np/2*dlog(2*pi) - 1/PRODUCT(W)/2 - np/2*dlog(dble(nr))
-	end function
+	end subroutine
 
 	! Bayes Factors/IWAMDE Savage-Dickey ratio
 	double precision function lg_savage_dickey_bayes_factors(this, nr, nc, X, y, ns, np, sample, nhp, hp, ncnst, pcnst, cnst) result(r)

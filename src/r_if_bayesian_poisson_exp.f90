@@ -18,7 +18,7 @@ subroutine hmc_fit_poisson_exp(nr, nc, X, y, N, theta_sample, np, theta_init, nh
 		epsilons, adjustEpsilonsN, L, randlength, Sigma, constrain, seed, accept_r)
 end subroutine
 
-subroutine optim_bayesian_poisson_exp(nr, nc, X, y, np, p, nhp, hp, f, h)
+subroutine optim_bayesian_poisson_exp(nr, nc, X, y, np, p, nhp, hp, f, h, info)
 	use poisson_exp
 	implicit none
 	integer, intent(in) :: nr, nc, np, nhp
@@ -28,12 +28,13 @@ subroutine optim_bayesian_poisson_exp(nr, nc, X, y, np, p, nhp, hp, f, h)
 	double precision, dimension(nhp), intent(in) :: hp
 	double precision, intent(out) :: f
 	double precision, dimension(np, np), intent(out) :: h
+	integer, intent(out) :: info
 	type(poisson) :: this
 
-	call this%optim(nr, nc, X, y, np, p, nhp, hp, f, h)
+	call this%optim(nr, nc, X, y, np, p, nhp, hp, f, h, info)
 end subroutine
 
-subroutine log_ml_poisson_exp(nr, nc, X, y, np, p, nhp, hp, r)
+subroutine log_ml_poisson_exp(nr, nc, X, y, np, p, nhp, hp, r, info)
 	use poisson_exp
 	implicit none
 	integer, intent(in) :: nr, nc, np, nhp
@@ -42,9 +43,10 @@ subroutine log_ml_poisson_exp(nr, nc, X, y, np, p, nhp, hp, r)
 	double precision, dimension(np), intent(in) :: p
 	double precision, dimension(nhp), intent(in) :: hp
 	double precision, intent(out) :: r
+	integer, intent(out) :: info
 	type(poisson) :: this
 
-	r = this%la_log_ml(nr, nc, X, y, np, p, nhp, hp)
+	call this%la_log_ml(nr, nc, X, y, np, p, nhp, hp, r, info)
 
 end subroutine
 

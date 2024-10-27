@@ -31,7 +31,7 @@ subroutine hmc_fit_rusrf(N, theta_sample, np, theta_init, &
 		epsilons, adjustEpsilonsN, L, randlength, Sigma, constrain, seed, accept_r)
 end subroutine
 
-subroutine optim_rusrf(np, p, r_objf_ptr, r_objf_envir_ptr, r_objfg_ptr, r_objfg_envir_ptr, nbd, u, l, h, f, hessian) &
+subroutine optim_rusrf(np, p, r_objf_ptr, r_objf_envir_ptr, r_objfg_ptr, r_objfg_envir_ptr, nbd, u, l, h, f, hessian, info) &
 	bind(C, name = "optim_rusrf")
 	use iso_c_binding
 	use rusrf
@@ -42,6 +42,7 @@ subroutine optim_rusrf(np, p, r_objf_ptr, r_objf_envir_ptr, r_objfg_ptr, r_objfg
 	double precision, intent(in) :: h
 	double precision, intent(out) :: f
 	double precision, dimension(np, np), intent(out) :: hessian
+	integer, intent(out) :: info
 	integer, dimension(np) :: nbd
 	double precision, dimension(np) :: u, l
     integer, parameter :: nr = 1, nc = 1, nhp = 1
@@ -59,10 +60,10 @@ subroutine optim_rusrf(np, p, r_objf_ptr, r_objf_envir_ptr, r_objfg_ptr, r_objfg
 	this%u(1:np) = u
 	this%l(1:np) = l
 
-	call this%optim(nr, nc, dummy_X, dummy_y, np, p, nhp, dummy_hp, f, hessian)
+	call this%optim(nr, nc, dummy_X, dummy_y, np, p, nhp, dummy_hp, f, hessian, info)
 end subroutine
 
-subroutine log_ml_rusrf(nr, nc, np, p, r_objf_ptr, r_objf_envir_ptr, r_objfg_ptr, r_objfg_envir_ptr, nbd, u, l, h, r) &
+subroutine log_ml_rusrf(nr, nc, np, p, r_objf_ptr, r_objf_envir_ptr, r_objfg_ptr, r_objfg_envir_ptr, nbd, u, l, h, r, info) &
 	bind(C, name = "log_ml_rusrf")
 	use iso_c_binding
 	use rusrf
@@ -72,6 +73,7 @@ subroutine log_ml_rusrf(nr, nc, np, p, r_objf_ptr, r_objf_envir_ptr, r_objfg_ptr
 	double precision, intent(out) :: r
     type(c_ptr), intent(in) :: r_objf_ptr, r_objf_envir_ptr, r_objfg_ptr, r_objfg_envir_ptr
 	double precision, intent(in) :: h
+	integer, intent(out) :: info
 	integer, dimension(np) :: nbd
 	double precision, dimension(np) :: u, l
     integer, parameter :: nhp = 0
@@ -89,6 +91,6 @@ subroutine log_ml_rusrf(nr, nc, np, p, r_objf_ptr, r_objf_envir_ptr, r_objfg_ptr
 	this%u(1:np) = u
 	this%l(1:np) = l
 
-	r = this%la_log_ml(nr, nc, dummy_X, dummy_y, np, p, nhp, dummy_hp)
+	call this%la_log_ml(nr, nc, dummy_X, dummy_y, np, p, nhp, dummy_hp, r, info)
 
 end subroutine

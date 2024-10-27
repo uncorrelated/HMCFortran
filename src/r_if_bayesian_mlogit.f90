@@ -22,7 +22,7 @@ subroutine hmc_fit_bayesian_mlogit(nr, nc, X, y, N, theta_sample, np, theta_init
 		epsilons, adjustEpsilonsN, L, randlength, Sigma, constrain, seed, accept_r)
 end subroutine
 
-subroutine optim_bayesian_mlogit(nr, nc, X, y, np, p, nhp, hp, noc, nok, f, h)
+subroutine optim_bayesian_mlogit(nr, nc, X, y, np, p, nhp, hp, noc, nok, f, h, info)
 	use bayesian_mlogit
 	implicit none
 	integer, intent(in) :: nr, nc, np, nhp, noc, nok
@@ -32,16 +32,17 @@ subroutine optim_bayesian_mlogit(nr, nc, X, y, np, p, nhp, hp, noc, nok, f, h)
 	double precision, dimension(nhp), intent(in) :: hp
 	double precision, intent(out) :: f
 	double precision, dimension(np, np), intent(out) :: h
+	integer, intent(out) :: info
 	type(mlogit) :: this
 
 	this%noc = noc
     this%nok = nok
     this%h = 1d-5
 
-	call this%optim(nr, nc, X, y, np, p, nhp, hp, f, h)
+	call this%optim(nr, nc, X, y, np, p, nhp, hp, f, h, info)
 end subroutine
 
-subroutine log_ml_bayesian_mlogit(nr, nc, X, y, np, p, nhp, hp, noc, nok, r)
+subroutine log_ml_bayesian_mlogit(nr, nc, X, y, np, p, nhp, hp, noc, nok, r, info)
 	use bayesian_mlogit
 	implicit none
 	integer, intent(in) :: nr, nc, np, nhp, noc, nok
@@ -50,12 +51,13 @@ subroutine log_ml_bayesian_mlogit(nr, nc, X, y, np, p, nhp, hp, noc, nok, r)
 	double precision, dimension(np), intent(in) :: p
 	double precision, dimension(nhp), intent(in) :: hp
 	double precision, intent(out) :: r
+	integer, intent(out) :: info
 	type(mlogit) :: this
 
     this%noc = noc
     this%nok = nok
 
-	r = this%la_log_ml(nr, nc, X, y, np, p, nhp, hp)
+	call this%la_log_ml(nr, nc, X, y, np, p, nhp, hp, r, info)
 
 end subroutine
 

@@ -193,13 +193,13 @@ SEXP    r, m, ar;
 
 void log_ml_rusrf(int *nr, int *nc, int *np, double *p, 
     void *r_objf, void *r_objf_envir, void *r_objfg, void *r_objfg_envir, double *h, 
-    double *lg_mlf);
+    double *lg_mlf, int *info);
 
 /* Rから呼び出されるCの関数/対数周辺尤度計算用 */
 SEXP invoke_lg_mlf(SEXP r_nr, SEXP r_nc, SEXP r_p, SEXP r_objf, SEXP r_objf_envir, SEXP r_objfg, SEXP r_objfg_envir, SEXP r_h){
     double  *p, h, lg_mlf;
-    int     nr, nc, np; 
-    SEXP    r, r_lg_mlf;
+    int     nr, nc, np, info; 
+    SEXP    r, r_lg_mlf, r_info;
 
     /* 引数が関数か確認 */
     if(!isFunction(r_objf))
@@ -222,27 +222,31 @@ SEXP invoke_lg_mlf(SEXP r_nr, SEXP r_nc, SEXP r_p, SEXP r_objf, SEXP r_objf_envi
     p = fromRtoC_dbl_v(r_p);
 
     /* Rの関数と環境のポインターを引数に、Fortranのプロシージャを呼ぶ */
-    log_ml_rusrf(&nr, &nc, &np, p, &r_objf, &r_objf_envir, &r_objfg, &r_objfg_envir, &h, &lg_mlf);
+    log_ml_rusrf(&nr, &nc, &np, p, &r_objf, &r_objf_envir, &r_objfg, &r_objfg_envir, &h, &lg_mlf, &info);
 
-    PROTECT(r = allocVector(VECSXP, 1));
+    PROTECT(r = allocVector(VECSXP, 2));
 
     PROTECT(r_lg_mlf = allocVector(REALSXP, 1));
     REAL(r_lg_mlf)[0] = lg_mlf;
     SET_VECTOR_ELT(r, 0, r_lg_mlf);
 
-    UNPROTECT(2);
+    PROTECT(r_info = allocVector(REALSXP, 1));
+    REAL(r_info)[0] = info;
+    SET_VECTOR_ELT(r, 1, r_info);
+
+    UNPROTECT(3);
 
     return r;
 }
 
-void optim_rusrf(int *np, double *p, void *r_objf, void *r_objf_envir, void *r_objfg, void *r_objfg_envir, int *nbd, double *u, double *l, double *h, double *f, double *hessian);
+void optim_rusrf(int *np, double *p, void *r_objf, void *r_objf_envir, void *r_objfg, void *r_objfg_envir, int *nbd, double *u, double *l, double *h, double *f, double *hessian, int *info);
 
 /* Rから呼び出されるCの関数/L-BFGS-B用 */
 // SEXP r_objfg, SEXP r_objfg_envir
 SEXP invoke_optim(SEXP r_p, SEXP r_objf, SEXP r_objf_envir, SEXP r_objfg, SEXP r_objfg_envir, SEXP r_h, SEXP r_nbd, SEXP r_u, SEXP r_l){
     double  *p, f, h, *hessian, *u, *l;
-    int     np, i, j, *nbd;
-    SEXP    r, r_op, r_f, r_hessian;
+    int     np, i, j, *nbd, info;
+    SEXP    r, r_op, r_f, r_hessian, r_info;
 
     /* 引数が関数か確認 */
     if(!isFunction(r_objf))
@@ -269,9 +273,9 @@ SEXP invoke_optim(SEXP r_p, SEXP r_objf, SEXP r_objf_envir, SEXP r_objfg, SEXP r
     hessian = (double *)R_alloc(np * np, sizeof(double));
 
     /* Rの関数と環境のポインターを引数に、Fortranのプロシージャを呼ぶ */
-    optim_rusrf(&np, p, &r_objf, &r_objf_envir, &r_objfg, &r_objfg_envir, nbd, u, l, &h, &f, hessian);
+    optim_rusrf(&np, p, &r_objf, &r_objf_envir, &r_objfg, &r_objfg_envir, nbd, u, l, &h, &f, hessian, &info);
   
-    PROTECT(r = allocVector(VECSXP, 3));
+    PROTECT(r = allocVector(VECSXP, 4));
 
     PROTECT(r_op = allocVector(REALSXP, np));
     for(i = 0; i < np; i++)
@@ -288,7 +292,11 @@ SEXP invoke_optim(SEXP r_p, SEXP r_objf, SEXP r_objf_envir, SEXP r_objfg, SEXP r
             REAL(r_hessian)[i + j*np] = hessian[i + j*np];
     SET_VECTOR_ELT(r, 2, r_hessian);
 
-    UNPROTECT(4);
+    PROTECT(r_info = allocVector(REALSXP, 1));
+    REAL(r_info)[0] = info;
+    SET_VECTOR_ELT(r, 3, r_info);
+
+    UNPROTECT(5);
 
     return r;
 }
