@@ -1,5 +1,3 @@
-library(coda)
-
 ### すべての推定で共通に使う関数群 ###
 
 set_seeds <- function(seed, nchains){
@@ -694,8 +692,6 @@ hmc.poisson_exp <- function(frml, beta.mu, beta.Sigma, data = NULL,
 		registerDoParallel(cl)
 
 		r_sub <- foreach(i = 1:nchains) %dopar% {
-			# dll <- paste("r_if_bayesian_poisson_exp", .Platform$dynlib.ext, sep="")
-			# fs <- dyn.load(dll)
 
 			r <- .Fortran("hmc_fit_poisson_exp",
 				nrow(X), ncol(X), X, as.double(y),
@@ -709,8 +705,6 @@ hmc.poisson_exp <- function(frml, beta.mu, beta.Sigma, data = NULL,
 				FALSE,
 				as.integer(seed[i]),
 				as.double(0))
-
-			# dyn.unload(dll)
 
 			list(s = r[[6]], ar = r[[18]])
 		}
@@ -810,9 +804,6 @@ hmc.usrfunc <- function(init.p, func0, grad0 = NULL, ..., h = 1e-6, N = 3000, BI
 		registerDoParallel(cl)
 
 		r_sub <- foreach(i = 1:nchains) %dopar% {
-			# dll <- paste("r_if_r_usr_f", .Platform$dynlib.ext, sep="")
-			# fs <- dyn.load(dll)
-
 			# foreachループの外側で定義したfunc1を呼ぼうとすると、
 			# <anonymous>: ... may be used in an incorrect context: ‘func0(p, ...)’
 			# と警告が出るので、内側で同じ関数を再定義する
@@ -829,8 +820,6 @@ hmc.usrfunc <- function(init.p, func0, grad0 = NULL, ..., h = 1e-6, N = 3000, BI
 				as.double(diag(np)),
 				FALSE,
 				as.integer(seed[i]))
-
-			# dyn.unload(dll)
 
 			list(s = r[[1]], ar = r[[2]])
 		}

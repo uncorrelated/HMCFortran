@@ -14,8 +14,6 @@ gendata <- function(n = 100){
 
 df01 <- gendata(1000)
 
-r_glm <- glm(y ~ x + z, data = df01, family = binomial())
-
 # prior/hyper parameters
 beta.mu <- c(0, 0, 0)
 beta.sigma <- diag(100, 3, 3)
