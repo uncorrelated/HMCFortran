@@ -119,9 +119,9 @@ hmc.blm <- function(frml, ig.alpha, ig.beta, mu, Sigma, data = NULL,
 
 	seed <- set_seeds(seed, nchains)
 
-	frml <- model.frame(frml, data)
+	data <- model.frame(frml, data)
 	X <- model.matrix(frml, data)
-	y <- model.response(frml)
+	y <- model.response(data)
 
 	init.p <- c(0.5, runif(ncol(X)))
 	np <- length(init.p)
@@ -248,9 +248,9 @@ hmc.blogit <- function(frml, beta.mu, beta.Sigma, data = NULL,
 
 	seed = set_seeds(seed, nchains)
 
-	frml <- model.frame(frml, data)
+	data <- model.frame(frml, data)
 	X <- model.matrix(frml, data)
-	y <- model.response(frml)
+	y <- model.response(data)
 
 	init.p <- runif(ncol(X))
 	np <- length(init.p)
@@ -660,9 +660,9 @@ hmc.poisson_exp <- function(frml, beta.mu, beta.Sigma, data = NULL,
 
 	seed = set_seeds(seed, nchains)
 
-	frml <- model.frame(frml, data)
+	data <- model.frame(frml, data)
 	X <- model.matrix(frml, data)
-	y <- model.response(frml)
+	y <- model.response(data)
 
 	if(!is.integer(y)) stop("Dependent variables must be integer.")
 	if(any(y < 0)) stop("Dependent variables must be equal to or greater than zero.")
