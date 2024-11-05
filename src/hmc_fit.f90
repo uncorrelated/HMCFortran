@@ -26,7 +26,7 @@ module hmc
             implicit none
 			class(model), intent(inout) :: this
             integer, intent(in) :: nr, nc, np, nhp
-            double precision, dimension(nr, nc), intent(in) :: X
+            double precision, dimension(nr, nc), intent(inout) :: X
             double precision, dimension(nr), intent(in) :: y
             double precision, dimension(np), intent(in) :: p
             double precision, dimension(nhp), intent(in) :: hp
@@ -36,7 +36,7 @@ module hmc
 			implicit none
 			class(model), intent(inout) :: this
 			integer, intent(in) :: nr, nc, np, nhp
-			double precision, dimension(nr, nc), intent(in) :: X
+			double precision, dimension(nr, nc), intent(inout) :: X
 			double precision, dimension(nr), intent(in) :: y
 			double precision, dimension(np), intent(in) :: p
 			double precision, dimension(nhp), intent(in) :: hp
@@ -90,7 +90,7 @@ module hmc
 		double precision, dimension(N, np), intent(inout) :: theta_sample
 		double precision, dimension(np), intent(inout) :: theta_init
 		double precision, dimension(nr), intent(in) :: y
-		double precision, dimension(nr, nc),intent(in) :: X
+		double precision, dimension(nr, nc),intent(inout) :: X
 		double precision, dimension(nhp), intent(in) :: hp
 		double precision, dimension(np) :: g, mu_p
 		integer, intent(in) :: seed
@@ -224,7 +224,7 @@ module hmc
 				double precision, dimension(np, np), intent(in) :: Minv
 				double precision, dimension(np), intent(inout) :: p, r
 				double precision, dimension(nr), intent(in) :: y
-				double precision, dimension(nr, nc),intent(in) :: X
+				double precision, dimension(nr, nc),intent(inout) :: X
 				double precision, dimension(nhp), intent(in) :: hp
 				double precision, dimension(np) :: g
 				double precision :: s
@@ -412,7 +412,7 @@ module hmc
 		class(model), intent(inout) :: this
 		integer, intent(in) :: nr, nc, np, nhp
 		double precision, dimension(nr), intent(in) :: y
-		double precision, dimension(nr, nc),intent(in) :: X
+		double precision, dimension(nr, nc),intent(inout) :: X
 		! in: 初期値 out: 最適値
 		double precision, dimension(np), intent(inout) :: p_lbfgsb
 		double precision, dimension(nhp), intent(in) :: hp
@@ -493,7 +493,7 @@ module hmc
 		class(model), intent(inout) :: this
 		integer, intent(in) :: nr, nc, np, nhp
 		double precision, dimension(nr), intent(in) :: y
-		double precision, dimension(nr, nc),intent(in) :: X
+		double precision, dimension(nr, nc),intent(inout) :: X
 		double precision, dimension(np), intent(in) :: init_p
 		double precision, dimension(nhp), intent(in) :: hp
 		double precision, parameter :: pi = 3.141592653589793115998
@@ -538,7 +538,7 @@ module hmc
 		! ns: サンプルサイズ, ncnst: 制約の数
 		integer, intent(in) :: nr, nc, ns, np, nhp, ncnst
 		double precision, dimension(nr), intent(in) :: y
-		double precision, dimension(nr, nc), intent(in) :: X
+		double precision, dimension(nr, nc), intent(inout) :: X
 		double precision, dimension(ns, np), intent(in) :: sample
 		double precision, dimension(nhp), intent(in) :: hp
 		integer, dimension(ncnst), intent(in) :: pcnst ! 制約条件の位置

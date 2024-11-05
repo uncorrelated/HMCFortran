@@ -2,7 +2,7 @@ subroutine test_poisson_objf(nr, nc, X, y, np, p, nhp, hp, r)
     use poisson_exp
     implicit none
     integer, intent(in) :: nr, nc, np, nhp
-    double precision, dimension(nr, nc), intent(in) :: X
+    double precision, dimension(nr, nc), intent(inout) :: X
     double precision, dimension(nr), intent(in) :: y
     double precision, dimension(np), intent(in) :: p
     double precision, dimension(nhp), intent(in) :: hp
@@ -17,7 +17,7 @@ subroutine test_poisson_objfg(nr, nc, X, y, np, p, nhp, hp, g)
     use poisson_exp
     implicit none
     integer, intent(in) :: nr, nc, np, nhp
-    double precision, dimension(nr, nc), intent(in) :: X
+    double precision, dimension(nr, nc), intent(inout) :: X
     double precision, dimension(nr), intent(in) :: y
     double precision, dimension(np), intent(in) :: p
     double precision, dimension(nhp), intent(in) :: hp

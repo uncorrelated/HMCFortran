@@ -15,7 +15,7 @@ module poisson_exp
             implicit none
             class(poisson), intent(inout) :: this
             integer, intent(in) :: nr, nc, np, nhp
-            double precision, dimension(nr, nc), intent(in) :: X
+            double precision, dimension(nr, nc), intent(inout) :: X
             double precision, dimension(nr), intent(in) :: y
             double precision, dimension(np), intent(in) :: p
             double precision, dimension(nhp), intent(in) :: hp
@@ -38,7 +38,7 @@ module poisson_exp
 			implicit none
             class(poisson), intent(inout) :: this
 			integer, intent(in) :: nr, nc, np, nhp
-			double precision, dimension(nr, nc), intent(in) :: X
+			double precision, dimension(nr, nc), intent(inout) :: X
 			double precision, dimension(nr), intent(in) :: y
 			double precision, dimension(np), intent(in) :: p
 			double precision, dimension(nhp), intent(in) :: hp
@@ -101,7 +101,7 @@ module poisson_exp
             implicit none
             class(poisson), intent(inout) :: this
             integer, intent(in) :: nr, nc, np, ss
-            double precision, dimension(nr, nc), intent(in) :: X
+            double precision, dimension(nr, nc), intent(inout) :: X
             double precision, dimension(ss, np), intent(in) :: P
             double precision, dimension(nr * ss), intent(out) :: y
             integer :: i, j

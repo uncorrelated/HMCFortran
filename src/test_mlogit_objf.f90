@@ -2,7 +2,7 @@ subroutine test_mlogit_objf(nr, nc, X, y, np, p, nhp, hp, noc, nok, r)
     use bayesian_mlogit
     implicit none
     integer, intent(in) :: nr, nc, np, nhp, noc, nok
-    double precision, dimension(nr, nc), intent(in) :: X
+    double precision, dimension(nr, nc), intent(inout) :: X
     double precision, dimension(nr), intent(in) :: y
     double precision, dimension(np), intent(in) :: p
     double precision, dimension(nhp), intent(in) :: hp
@@ -22,7 +22,7 @@ subroutine test_mlogit_objfg(nr, nc, X, y, np, p, nhp, hp, noc, nok, g)
     use hmc
     implicit none
     integer, intent(in) :: nr, nc, np, nhp, noc, nok
-    double precision, dimension(nr, nc), intent(in) :: X
+    double precision, dimension(nr, nc), intent(inout) :: X
     double precision, dimension(nr), intent(in) :: y
     double precision, dimension(np), intent(in) :: p
     double precision, dimension(nhp), intent(in) :: hp

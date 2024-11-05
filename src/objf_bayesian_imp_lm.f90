@@ -4,7 +4,6 @@ module bayesian_imp_lm
     use imputation
     type, extends(blm) :: blm_imp
         type(impinfo) :: imp
-        double precision, pointer, dimension(:, :) :: X ! 補定される用
         integer :: nev, nmu ! 回帰に用いる説明変数の数, 補定に用いる変数の数
         contains
             procedure :: objf => objf_imp
@@ -18,7 +17,7 @@ module bayesian_imp_lm
             implicit none
             class(blm_imp), intent(inout) :: this
             integer, intent(in) :: nr, nc, np, nhp
-            double precision, dimension(nr, nc), intent(in) :: X
+            double precision, dimension(nr, nc), intent(inout) :: X
             double precision, dimension(nr), intent(in) :: y
             double precision, dimension(np), intent(in) :: p
             double precision, dimension(2 + (nc + nc**2) + (nc - 1 + (nc - 1)**2)), intent(in) :: hp
@@ -36,9 +35,9 @@ module bayesian_imp_lm
             iSigma_X = reshape(hp(1 + (2 + this%nev + this%nev**2) + nmu:(2 + this%nev + this%nev**2) + nmu +  nmu**2), &
                 (/nmu, nmu/))
             ! 補定をする/補定に使ったパラメーターの対数尤度を得る
-            call this%imp%impute(nr, nmu, this%X(:, 2:nmu), mu, llf_x, r, info)
+            call this%imp%impute(nr, nmu, X(:, 2:nmu), mu, llf_x, r, info)
             ! 線形回帰の目的関数を呼ぶ
-            r = r + this%blm%objf(nr, this%nev, this%X, y, 1 + this%nev, p, 2 + (this%nev + this%nev**2), hp)
+            r = r + this%blm%objf(nr, this%nev, X, y, 1 + this%nev, p, 2 + (this%nev + this%nev**2), hp)
             ! 補定用パラメーターの対数化事前確率を足す
             r = r + lg_dmvnorm_by_precision(nmu, mu, mu_X, iSigma_X)
         end function
@@ -47,7 +46,7 @@ module bayesian_imp_lm
 			implicit none
 			class(blm_imp), intent(inout) :: this
 			integer, intent(in) :: nr, nc, np, nhp
-			double precision, dimension(nr, nc), intent(in) :: X
+			double precision, dimension(nr, nc), intent(inout) :: X
 			double precision, dimension(nr), intent(in) :: y
             double precision, dimension(np), intent(in) :: p
             double precision, dimension(nhp), intent(in) :: hp
@@ -111,7 +110,7 @@ module bayesian_imp_lm
 			implicit none
 			class(blm_imp), intent(inout) :: this
 			integer, intent(in) :: nr, nc, np, ss
-			double precision, dimension(nr, nc), intent(in) :: X
+			double precision, dimension(nr, nc), intent(inout) :: X
 			double precision, dimension(ss, np), intent(in) :: P
             double precision, dimension(nr * ss), intent(out) :: y
             double precision, allocatable, dimension(:) :: mu
@@ -124,7 +123,7 @@ module bayesian_imp_lm
             do i = 1, ss
                 mu = P(i, 2 + this%nev:1 + this%nev + nmu)
                 ! 補定をする/補定に使ったパラメーターの対数尤度を得る
-                call this%imp%impute(nr, nmu, this%X(:, 2:nmu), mu, llf_x, llf_p, info)
+                call this%imp%impute(nr, nmu, X(:, 2:nmu), mu, llf_x, llf_p, info)
                 ! 線形回帰モデルの予測値をつくるコードを呼ぶ
                 call this%blm%predict(nr, this%nev, X, 1, 1 + this%nev, P, y(1 + (i - 1)*nr : i*nr))
             end do

@@ -9,7 +9,7 @@ subroutine hmc_fit_bayesian_mlogit(nr, nc, X, y, N, theta_sample, np, theta_init
 	double precision, dimension(N, np), intent(inout) :: theta_sample
 	double precision, dimension(np), intent(inout) :: theta_init
 	double precision, dimension(nr), intent(in) :: y
-	double precision, dimension(nr, nc),intent(in) :: X
+	double precision, dimension(nr, nc),intent(inout) :: X
 	double precision, dimension(nhp) :: hp
 	integer, intent(in) :: seed
 	double precision, intent(out) :: accept_r
@@ -27,7 +27,7 @@ subroutine optim_bayesian_mlogit(nr, nc, X, y, np, p, nhp, hp, noc, nok, f, h, i
 	implicit none
 	integer, intent(in) :: nr, nc, np, nhp, noc, nok
 	double precision, dimension(nr), intent(in) :: y
-	double precision, dimension(nr, nc), intent(in) :: X
+	double precision, dimension(nr, nc), intent(inout) :: X
 	double precision, dimension(np), intent(inout) :: p
 	double precision, dimension(nhp), intent(in) :: hp
 	double precision, intent(out) :: f
@@ -47,7 +47,7 @@ subroutine log_ml_bayesian_mlogit(nr, nc, X, y, np, p, nhp, hp, noc, nok, r, inf
 	implicit none
 	integer, intent(in) :: nr, nc, np, nhp, noc, nok
 	double precision, dimension(nr), intent(in) :: y
-	double precision, dimension(nr, nc), intent(in) :: X
+	double precision, dimension(nr, nc), intent(inout) :: X
 	double precision, dimension(np), intent(in) :: p
 	double precision, dimension(nhp), intent(in) :: hp
 	double precision, intent(out) :: r
@@ -67,7 +67,7 @@ subroutine bayes_factor_mlogit(nr, nc, X, y, ns, np, sample, nhp, hp, noc, nok, 
 	! ns: サンプルサイズ, ncnst: 制約の数
 	integer, intent(in) :: nr, nc, ns, np, nhp, ncnst, noc, nok
 	double precision, dimension(nr), intent(in) :: y
-	double precision, dimension(nr, nc), intent(in) :: X
+	double precision, dimension(nr, nc), intent(inout) :: X
 	double precision, dimension(ns, np), intent(in) :: sample
 	double precision, dimension(nhp), intent(in) :: hp
 	integer, dimension(ncnst), intent(in) :: pcnst
@@ -85,7 +85,7 @@ subroutine hmc_predict_mlogit(nr, nc, X, ss, np, P, noc, nok, Y)
 	use bayesian_mlogit
 	implicit none
 	integer, intent(in) :: nr, nc, np, ss, noc, nok
-	double precision, dimension(nr, nc), intent(in) :: X
+	double precision, dimension(nr, nc), intent(inout) :: X
 	double precision, dimension(ss, np), intent(in) :: P
 	double precision, dimension(nr * ss, nok), intent(out) :: Y
 	type(mlogit) :: this

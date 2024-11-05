@@ -29,7 +29,7 @@ module rusrf
 				end function
 			end interface
 			integer, intent(in) :: nr, nc, np, nhp
-			double precision, dimension(nr, nc), intent(in) :: X
+			double precision, dimension(nr, nc), intent(inout) :: X
 			double precision, dimension(nr), intent(in) :: y
 			double precision, dimension(np), intent(in) :: p
 			double precision, dimension(np), intent(in) :: hp
@@ -52,7 +52,7 @@ module rusrf
 				end subroutine
 			end interface
 			integer, intent(in) :: nr, nc, np, nhp
-			double precision, dimension(nr, nc), intent(in) :: X
+			double precision, dimension(nr, nc), intent(inout) :: X
 			double precision, dimension(nr), intent(in) :: y
 			double precision, dimension(np), intent(in) :: p
 			double precision, dimension(np), intent(in) :: hp

@@ -7,18 +7,16 @@ subroutine hmc_fit_bayesian_imp_lm(nr, nc, nev, X, y, N, theta_sample, np, theta
 	double precision, dimension(np, np), intent(in) :: sigma
 	double precision, dimension(N, np), intent(inout) :: theta_sample
 	double precision, dimension(np), intent(inout) :: theta_init
-	double precision, dimension(nr), intent(in) :: y
-	double precision, dimension(nr, nc), intent(in) :: X
+	double precision, dimension(nr), intent(inout) :: y
+	double precision, dimension(nr, nc), intent(inout) :: X
 	double precision, dimension(nhp) :: hp
 	integer, intent(in) :: seed
 	double precision, intent(out) :: accept_r
 	type(blm_imp) :: this
 
 	this%h = 1d-5
-	allocate(this%X(nr, nc))
-	this%X = X ! あとでXのintentをinoutにして無くす
 	this%nev = nev
-	call this%imp%initialize(nr, nc - 1, this%X(:, 2:nc))
+	call this%imp%initialize(nr, nc - 1, X(:, 2:nc))
 	call this%fit(nr, nc, X, y, N, theta_sample, np, theta_init, nhp, hp, &
 		epsilons, adjustEpsilonsN, L, randlength, Sigma, constrain, seed, accept_r)
 	call this%imp%finalize
@@ -39,13 +37,10 @@ subroutine optim_bayesian_imp_lm(nr, nc, nev, X, y, np, p, nhp, hp, f, h, info)
 	type(blm_imp) :: this
 
 	this%h = 1d-5
-	allocate(this%X(nr, nc))
-	this%X = X ! あとでXのintentをinoutにして無くす
 	this%nev = nev
-	call this%imp%initialize(nr, nc - 1, this%X(:, 2:nc))
+	call this%imp%initialize(nr, nc - 1, X(:, 2:nc))
 	call this%optim(nr, nc, X, y, np, p, nhp, hp, f, h, info)
 	call this%imp%finalize
-	X = this%X
 
 end subroutine
 
@@ -54,7 +49,7 @@ subroutine log_ml_bayesian_imp_lm(nr, nc, nev, X, y, np, p, nhp, hp, r, info)
 	implicit none
 	integer, intent(in) :: nr, nc, nev, np, nhp
 	double precision, dimension(nr), intent(in) :: y
-	double precision, dimension(nr, nc), intent(in) :: X
+	double precision, dimension(nr, nc), intent(inout) :: X
 	double precision, dimension(np), intent(in) :: p
 	double precision, dimension(nhp), intent(in) :: hp
 	double precision, intent(out) :: r
@@ -62,10 +57,8 @@ subroutine log_ml_bayesian_imp_lm(nr, nc, nev, X, y, np, p, nhp, hp, r, info)
 	type(blm_imp) :: this
 
 	this%h = 1d-5
-	allocate(this%X(nr, nc))
-	this%X = X ! あとでXのintentをinoutにして無くす
 	this%nev = nev
-	call this%imp%initialize(nr, nc - 1, this%X(:, 2:nc))
+	call this%imp%initialize(nr, nc - 1, X(:, 2:nc))
 	call this%la_log_ml(nr, nc, X, y, np, p, nhp, hp, r, info)
 	call this%imp%finalize
 
@@ -76,7 +69,7 @@ subroutine bayes_factor_imp_lm(nr, nc, nev, X, y, ns, np, sample, nhp, hp, ncnst
 	implicit none
 	integer, intent(in) :: nr, nc, nev, ns, np, nhp, ncnst
 	double precision, dimension(nr), intent(in) :: y
-	double precision, dimension(nr, nc), intent(in) :: X
+	double precision, dimension(nr, nc), intent(inout) :: X
 	double precision, dimension(ns, np), intent(in) :: sample
 	double precision, dimension(nhp), intent(in) :: hp
 	integer, dimension(ncnst), intent(in) :: pcnst
@@ -85,11 +78,9 @@ subroutine bayes_factor_imp_lm(nr, nc, nev, X, y, ns, np, sample, nhp, hp, ncnst
 	type(blm_imp) :: this
 
 	this%h = 1d-5
-	allocate(this%X(nr, nc))
-	this%X = X ! あとでXのintentをinoutにして無くす
 	this%nev = nev ! 推定に用いる変数の数
 	this%nmu = (nc - 1) ! 補定に用いる変数の数
-	call this%imp%initialize(nr, nc - 1, this%X(:, 2:nc))
+	call this%imp%initialize(nr, nc - 1, X(:, 2:nc))
 	r = this%log_sd_bf(nr, nc, X, y, ns, np, sample, nhp, hp, ncnst, pcnst, cnst)
 	call this%imp%finalize
 
@@ -99,16 +90,14 @@ subroutine hmc_predict_imp_lm(nr, nc, nev, X, ss, np, P, y)
 	use bayesian_imp_lm
 	implicit none
 	integer, intent(in) :: nr, nc, nev, np, ss
-	double precision, dimension(nr, nc), intent(in) :: X
+	double precision, dimension(nr, nc), intent(inout) :: X
 	double precision, dimension(ss, np), intent(in) :: P
 	double precision, dimension(nr * ss), intent(out) :: y
 	type(blm_imp) :: this
 
 	this%h = 1d-5
-	allocate(this%X(nr, nc))
-	this%X = X ! あとでXのintentをinoutにして無くす
 	this%nev = nev
-	call this%imp%initialize(nr, nc - 1, this%X(:, 2:nc))
+	call this%imp%initialize(nr, nc - 1, X(:, 2:nc))
 	call this%predict(nr, nc, X, ss, np, P, y)
 	call this%imp%finalize
 

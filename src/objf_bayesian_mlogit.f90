@@ -17,7 +17,7 @@ module bayesian_mlogit
             implicit none
             class(mlogit), intent(inout) :: this
             integer, intent(in) :: nr, nc, np, nhp
-            double precision, dimension(nr, nc), intent(in) :: X
+            double precision, dimension(nr, nc), intent(inout) :: X
             double precision, dimension(nr), intent(in) :: y
             double precision, dimension(np), intent(in) :: p
             double precision, dimension(nhp), intent(in) :: hp
@@ -62,7 +62,7 @@ module bayesian_mlogit
 			implicit none
             class(mlogit), intent(inout) :: this
 			integer, intent(in) :: nr, nc, np, nhp
-			double precision, dimension(nr, nc), intent(in) :: X
+			double precision, dimension(nr, nc), intent(inout) :: X
 			double precision, dimension(nr), intent(in) :: y
 			double precision, dimension(np), intent(in) :: p
 			double precision, dimension(nhp), intent(in) :: hp
@@ -243,7 +243,7 @@ module bayesian_mlogit
             implicit none
             class(mlogit), intent(inout) :: this
             integer, intent(in) :: nr, nc, np, ss
-            double precision, dimension(nr, nc), intent(in) :: X
+            double precision, dimension(nr, nc), intent(inout) :: X
             double precision, dimension(ss, np), intent(in) :: P
             double precision, dimension(nr*ss, this%nok), intent(out) :: Y
             integer :: i, j
