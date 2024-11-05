@@ -17,13 +17,13 @@ lbfgsb_path=$(SHSRC)/lbfgsb/src/
 lbfgsb_files=lbfgsb_blas_module.F90 lbfgsb_kinds_module.F90 lbfgsb_linpack_module.f90 lbfgsb.f90
 lbfgsb_src=$(addprefix $(lbfgsb_path), $(lbfgsb_files))
 lbfgsb_obj=$(patsubst %.f90, %.o, $(patsubst %.F90, %.o, $(lbfgsb_files)))
-COMMON=hmc_fit.o mvnorm.o $(dSFMT) $(lbfgsb_obj)
-o_names=objf_bayesian_lm objf_bayesian_logit objf_bayesian_ologit objf_bayesian_mlogit objf_poisson_exp objf_r_usr_f test_ologit_objf test_mlogit_objf test_poisson_objf r_if_bayesian_lm r_if_bayesian_logit r_if_bayesian_ologit r_if_bayesian_mlogit r_if_bayesian_poisson_exp r_if_r_usr_f
+COMMON=hmc_fit.o mvnorm.o imputation.o $(dSFMT) $(lbfgsb_obj)
+o_names=objf_bayesian_lm objf_bayesian_logit objf_bayesian_ologit objf_bayesian_mlogit objf_poisson_exp objf_r_usr_f test_ologit_objf test_mlogit_objf test_poisson_objf r_if_bayesian_lm r_if_bayesian_logit r_if_bayesian_ologit r_if_bayesian_mlogit r_if_bayesian_poisson_exp r_if_r_usr_f objf_bayesian_imp_lm r_if_bayesian_imp_lm
 so_names=hmcfortran test_mlogit_objf test_ologit_objf test_poisson_objf
 
 ALL: $(addsuffix .$(SO), $(so_names))
 
-hmcfortran.$(SO): r_if_bayesian_lm.o objf_bayesian_lm.o \
+hmcfortran.$(SO): r_if_bayesian_lm.o objf_bayesian_lm.o r_if_bayesian_imp_lm.o objf_bayesian_imp_lm.o \
 	r_if_bayesian_logit.o objf_bayesian_logit.o r_if_bayesian_ologit.o r_if_bayesian_mlogit.o objf_bayesian_ologit.o objf_bayesian_mlogit.o \
 	r_if_bayesian_poisson_exp.o objf_poisson_exp.o \
 	r_if_r_usr_f.o objf_r_usr_f.o call_r_func.o $(COMMON)
@@ -40,6 +40,9 @@ test_ologit_objf.$(SO): test_ologit_objf.o objf_bayesian_ologit.o $(COMMON)
 
 test_poisson_objf.$(SO): test_poisson_objf.o objf_poisson_exp.o $(COMMON)
 	R CMD SHLIB $^ -o $@
+
+imputation.o: ./imputation.f90 
+	$(FC) -c $< -o $@ -fPIC
 
 define AT_O
 	$(FC) -c $(addsuffix .f90, $(addprefix ./, $(1))) -o $(addsuffix .o, $(1)) -fPIC

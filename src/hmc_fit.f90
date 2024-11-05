@@ -620,6 +620,65 @@ module hmc
 		r = dlog(pd_sum) - dlog(dble(ns)) - this%lg_marginal_prior(np, nhp, hp, ncnst, pcnst, cnst)
 	end function
 
+	! lg_savage_dickey_bayes_factorsで使う制約の整理用関数
+	! モジュールのメンバー関数ではあるが、クラスのメンバー関数ではない
+	subroutine cnst_sort(n, unsort_index, unsort_value, sort_index, sort_value)
+		implicit none
+		integer, intent(in) :: n
+		integer, dimension(n), intent(in) :: unsort_index
+		integer, dimension(n), intent(out) :: sort_index
+		double precision, dimension(n), intent(in) :: unsort_value
+		double precision, dimension(n), intent(out) :: sort_value
+		integer :: index_tmp
+		double precision :: value_tmp
+		integer i, j
+
+		sort_index = unsort_index
+		sort_value = unsort_value
+		do j = 1, n - 1
+			do i = 1, n - j
+				if(sort_value(i) > sort_value(i + 1)) then
+					index_tmp = sort_index(i) 
+					value_tmp = sort_value(i)
+					sort_index(i) = sort_index(i + 1) 
+					sort_value(i) = sort_value(i + 1)
+					sort_index(i + 1) = index_tmp 
+					sort_value(i + 1) = value_tmp
+				end if
+			end do
+		end do
+	end subroutine
+
+	! lg_savage_dickey_bayes_factorsで使う制約の整理用関数（補定用）
+	! モジュールのメンバー関数ではあるが、クラスのメンバー関数ではない
+	subroutine cnst_split(n, index_th, index_s, value_s, n_a, index_a, value_a, n_b, index_b, value_b)
+		integer, intent(in) :: n, index_th
+		integer, intent(out) :: n_a, n_b
+		integer, dimension(n), intent(in) :: index_s
+		integer, dimension(n), intent(out) :: index_a, index_b
+		double precision, dimension(n), intent(in) :: value_s
+		double precision, dimension(n), intent(out) :: value_a, value_b
+		integer i, j
+
+		n_a = 0
+		n_b = 0
+		do i = 1, n
+			if(index_s(i) > index_th) then
+				exit
+			end if
+			index_a(i) = index_s(i)
+			value_a(i) = value_s(i)
+			n_a = i
+		end do
+		i = n_a + 1
+		do while(i <= n)
+			index_b(i) = index_s(i) - index_th + 1
+			value_b(i) = value_s(i)
+			n_b = i
+			i = i + 1
+		end do
+	end subroutine
+
 ! linear predictorの部分だけ事前分布を持つ場合に呼び出す
 ! e.g. logit/mlogit/poisson
 ! （モジュールのメンバーだが、抽象クラスのメンバー外）
@@ -636,6 +695,11 @@ module hmc
 		integer :: INFO, len_mu
 		double precision, allocatable, dimension(:) :: m_mu
 		double precision, allocatable, dimension(:, :) :: m_Sigma
+
+		if(ncnst < 1) then
+			r = 0
+			return
+		end if
 
 		! ハイパーパラメーターを展開
 		mu = hp(1:np)

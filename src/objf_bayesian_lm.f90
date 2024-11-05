@@ -224,7 +224,7 @@ module bayesian_lm
 			!$omp do private(i)
 			do j = 1, ss
 				do i = 1, nr
-					y(i + nr*(j - 1)) = sum(X(i, :) * P(j, 2:np))
+					y(i + nr*(j - 1)) = sum(X(i, :) * P(j, 2:(nc + 1)))
 				end do
 			end do 
 			!$omp end do

@@ -8,7 +8,7 @@ module mvnorm
 			double precision, dimension(N, N), intent(in) :: Sigma
 			double precision, dimension(N), intent(in) :: mu, y
 			double precision, dimension(N, N) :: Chol
-			double precision :: slev
+			double precision :: log_sqrt_det
 			double precision, dimension(N) :: b
 			integer :: INFO, i
 
@@ -17,14 +17,14 @@ module mvnorm
 			call DPOTRF('U', N, Chol, N, INFO)
 
 			! 三角行列Cの行列式の対数を計算
-			slev = 0
+			log_sqrt_det = 0
 			do i = 1, N
-				slev = slev + DLOG(Chol(i, i))
+				log_sqrt_det = log_sqrt_det + DLOG(Chol(i, i))
 			end do
 
 			b = y - mu
 			call DTRTRS('U', 'T', 'N', N, 1, Chol, N, b, N, INFO)
-			lg_dmvnorm = -slev - 0.5 * N * log(2 * pi) - 0.5 * sum(b**2)
+			lg_dmvnorm = -log_sqrt_det - 0.5 * N * log(2 * pi) - 0.5 * sum(b**2)
 		end function 
 
 		subroutine g_lg_dmvnorm(N, y, mu, Sigma, b)
@@ -44,15 +44,32 @@ module mvnorm
 			b = -1 * b
 		end subroutine 
 
-		double precision function lg_dmvnorm_by_precision(N, y, mu, PM)
+		double precision function lg_dmvnorm_by_precision(N, y, mu, PM, log_inv_sqrt_det)
 			integer, intent(in) :: N
 			double precision, dimension(N, N), intent(in) :: PM
 			double precision, dimension(N), intent(in) :: mu, y
 			double precision, dimension(N) :: b
+			double precision, dimension(N, N) :: C
+			double precision, optional :: log_inv_sqrt_det
+			double precision :: lisd
+			integer :: INFO, i
+
+			if(present(log_inv_sqrt_det)) then
+				lisd = log_inv_sqrt_det
+			else
+				! コレスキー分解
+				C = PM
+				call DPOTRF('U', N, C, N, INFO)
+
+				! 三角行列Cの行列式の対数を計算
+				lisd = 0
+				do i = 1, N
+					lisd = lisd + DLOG(C(i, i))
+				end do
+			end if
 
 			b = y - mu
-			! PM⁻¹の行列式の対数など、サンプリング時に分子と分母でキャンセルアウトされる項は省略
-			lg_dmvnorm_by_precision = - 0.5 * SUM(b * MATMUL(PM, b))
+			lg_dmvnorm_by_precision = lisd - 0.5 * N * log(2 * pi) - 0.5 * SUM(b * MATMUL(PM, b))
 		end function 
 
 		subroutine g_lg_dmvnorm_by_precision(N, y, mu, PM, b)
