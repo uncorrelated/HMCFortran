@@ -13,6 +13,7 @@ module bayesian_logit
 
 	contains
 	double precision function objf(this, nr, nc, X, y, np, p, nhp, hp)
+		use IEEE_ARITHMETIC
 		implicit none
 		class(logit), intent(inout) :: this
 		integer, intent(in) :: nr, nc, np, nhp
@@ -21,7 +22,7 @@ module bayesian_logit
 		double precision, dimension(nc), intent(in) :: p
 		double precision, dimension(nhp), intent(in) :: hp
 		integer :: i, j
-		double precision :: sxp, s
+		double precision :: sxp, exp_minus_sxp, s
 		double precision, dimension(nc) :: mu
 		double precision, dimension(nc, nc) :: Sigma
 
@@ -31,10 +32,17 @@ module bayesian_logit
 
 		s = 0d0
 		!$omp parallel
-		!$omp do private(sxp) reduction(+: s)
+		!$omp do private(sxp, exp_minus_sxp) reduction(+: s)
 		do i = 1, nr
 			sxp = sum(X(i, :) * p)
-			s = s + sxp * (y(i) - 1) - dlog(1.0d0 + dexp(-1 * sxp))
+			! s = s + sxp * (y(i) - 1) - dlog(1 + dexp(-1 * sxp))
+			! 桁あふれ対策の近似
+			exp_minus_sxp = dexp(-sxp)
+			if(IEEE_IS_FINITE(exp_minus_sxp)) then
+				s = s + sxp * (y(i) - 1) - dlog(1 + exp_minus_sxp)
+			else
+				s = s + sxp * (y(i) - 1) + sxp
+			end if
 		end do
 		!$omp end do
 		!$omp end parallel
@@ -42,6 +50,7 @@ module bayesian_logit
 	end function
 
 	subroutine objfg(this, nr, nc, X, y, np, p, nhp, hp, g)
+		use IEEE_ARITHMETIC
 		implicit none
 		class(logit), intent(inout) :: this
 		integer, intent(in) :: nr, nc, np, nhp
@@ -51,7 +60,7 @@ module bayesian_logit
 		double precision, dimension(nhp), intent(in) :: hp
 		double precision, dimension(np), intent(out) :: g
 		integer :: i
-		double precision :: sxp
+		double precision :: sxp, exp_minus_sxp
 		double precision, dimension(nc) :: g_dmvnorm
 		double precision, dimension(nc) :: mu
 		double precision, dimension(nc, nc) :: Sigma
@@ -63,10 +72,17 @@ module bayesian_logit
 		g = 0
 
 		!$omp parallel
-		!$omp do private(sxp) reduction(+: g )
+		!$omp do private(sxp, exp_minus_sxp) reduction(+: g )
 		do i = 1, nr
 			sxp = sum(X(i, :) * p)
-			g = g + X(i, :) * (y(i) - 1 + dexp(-sxp)/(1 + dexp(-sxp)))
+			! g = g + X(i, :) * (y(i) - 1 + dexp(-sxp)/(1 + dexp(-sxp)))
+			! 桁あふれ対策の近似
+			exp_minus_sxp = dexp(-sxp)
+			if(IEEE_IS_FINITE(exp_minus_sxp)) then
+				g = g + X(i, :) * (y(i) - 1 + exp_minus_sxp/(1 + exp_minus_sxp))
+			else
+				g = g + X(i, :) * (y(i) - 1 + 1)
+			end if
 		end do
 		!$omp end do
 		!$omp end parallel
