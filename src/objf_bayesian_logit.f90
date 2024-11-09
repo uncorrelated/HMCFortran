@@ -140,7 +140,7 @@ module bayesian_logit
 		do j = 1, nr
 			do i = 1, ss
 				Xb = sum(X(j, :) * P(i, :))
-				y(i + nr*(j - 1)) = exp(Xb)/(1 + exp(Xb))
+				y(i + ss*(j - 1)) = exp(Xb)/(1 + exp(Xb))
 			end do
 		end do
 		!$omp end do

@@ -8,7 +8,6 @@ module bayesian_imp_lm
         contains
             procedure :: objf => objf_imp
             procedure :: objfg => objfg_imp
-            procedure :: plimit => plimit_imp
             procedure :: lg_marginal_prior => lg_marginal_prior_imp
             procedure :: predict => predict_imp
     end type
@@ -51,35 +50,10 @@ module bayesian_imp_lm
             double precision, dimension(np), intent(in) :: p
             double precision, dimension(nhp), intent(in) :: hp
 			double precision, dimension(nc + 1 + nc - 1), intent(out) :: g
-			double precision, dimension(np) :: q
-			integer :: i, j
-			double precision :: h
-			double precision, dimension(4) :: v
 
-            ! 数値微分を行う/リチャードソンの外挿
-			h = this%h
-			q(:) = p(:) ! 入力データはいじらない
-			do i = 1, np
-                do j = 1, 4
-                    q(i) = p(i) + 2*h - (j-1)*h
-                    v(j) = this%objf(nr, nc, X, y, np, q, nhp, hp)
-                end do
-				g(i) = (- v(1) + 8*v(2) - 8*v(3) + v(4))/(12*h)
-				q(i) = p(i) ! 戻す
-			end do
+            call this%gradient(nr, nc, X, y, np, p, nhp, hp, g)
+
         end subroutine
-
-        ! L-BFGS-Bの計算用
-		subroutine plimit_imp(this, np, nbd, l, u)
-			implicit none
-			class(blm_imp), intent(inout) :: this
-            integer, intent(in) :: np
-            integer, dimension(np), intent(out) :: nbd
-			double precision, dimension(np), intent(out) :: l, u
-			nbd(1) = 1
-			l(1) = 0d0
-			nbd(2:np) = 0
-		end subroutine
 
 		double precision function lg_marginal_prior_imp(this, np, nhp, hp, ncnst, pcnst, cnst) result(r)
             implicit none
@@ -125,7 +99,7 @@ module bayesian_imp_lm
                 ! 補定をする/補定に使ったパラメーターの対数尤度を得る
                 call this%imp%impute(nr, nmu, X(:, 2:nmu), mu, llf_x, llf_p, info)
                 ! 線形回帰モデルの予測値をつくるコードを呼ぶ
-                call this%blm%predict(nr, this%nev, X, 1, 1 + this%nev, P, y(1 + (i - 1)*nr : i*nr))
+                call this%blm%predict(nr, this%nev, X, 1, 1 + this%nev, P(i, :), y(1 + (i - 1)*nr : i*nr))
             end do
 
         end subroutine

@@ -7,12 +7,11 @@ module hmc
 		procedure(hmc_fit), pointer, pass :: fit => hmc_fit
 		procedure(maximum_likelihood_method), pointer, pass :: optim => maximum_likelihood_method
 		procedure(laplace_log_marginal_likelihood), pointer, pass :: la_log_ml => laplace_log_marginal_likelihood
-		! procedure(lg_savage_dickey_bayes_factors), pointer, pass :: log_sd_bf => lg_savage_dickey_bayes_factors
+		procedure(objfg_if), pointer, pass :: gradient => numerical_gradient
 		contains
 			procedure(objf_if), deferred, pass :: objf ! 目的関数
 			procedure(objfg_if), deferred, pass :: objfg ! objfのグラディエントを計算する関数
 			procedure(plimit_if), deferred, pass :: plimit ! パラメーターの正負の符号
-			! procedure(lg_marginal_prior_if), deferred, pass :: lg_marginal_prior ! 対数化事前確率
 	end type
 	! for Bayes Factors/IWAMDE Savage-Dickey ratio
 	type, abstract, extends(model) :: model_bf
@@ -420,8 +419,8 @@ module hmc
 		integer :: i
 		double precision, parameter :: pi = 3.141592653589793115998
 	!!! L-BFGS-Bで利用する変数
-		integer, parameter :: m = 5, iprint = -1
-		double precision, parameter :: factr = 1.0d+7, pgtol = 1.0d-8
+		integer, parameter :: m = 10, iprint = -1
+		double precision, parameter :: factr = 1.0d+7, pgtol = 1.0d-5
 		character(len=60) :: task, csave
 		logical :: lsave(4)
 		integer :: isave(44)
@@ -453,7 +452,7 @@ module hmc
 						csave, lsave, isave, dsave, &
 						iteration_file = 'driver1_output.txt' )
 		if (task(1:2) == 'FG') then
-	! 符号を逆にしておく
+		! 符号を逆にしておく
 			f = -this%objf(nr, nc, X, y, np, p_lbfgsb, nhp, hp)
 			call this%objfg(nr, nc, X, y, np, p_lbfgsb, nhp, hp, g)
 			g = -g
@@ -716,5 +715,45 @@ module hmc
 		r = lg_dmvnorm(ncnst, cnst, m_mu, m_Sigma)
 
 	end function
+
+	subroutine numerical_gradient(this, nr, nc, X, y, np, p, nhp, hp, g)
+		implicit none
+		class(model), intent(inout) :: this
+		integer, intent(in) :: nr, nc, np, nhp
+		double precision, dimension(nr, nc), intent(inout) :: X
+		double precision, dimension(nr), intent(in) :: y
+		double precision, dimension(np), intent(in) :: p
+		double precision, dimension(nhp), intent(in) :: hp
+		double precision, dimension(np), intent(out) :: g
+		double precision, dimension(np) :: q
+		integer :: i, j
+		double precision :: h
+		double precision, dimension(4) :: v
+
+		! 数値微分を行う/リチャードソンの外挿
+		h = this%h
+		q(:) = p(:) ! 入力データはいじらない
+		do i = 1, np
+			do j = 1, 4
+				q(i) = p(i) + 2*h - (j-1)*h
+				v(j) = this%objf(nr, nc, X, y, np, q, nhp, hp)
+			end do
+			g(i) = (- v(1) + 8*v(2) - 8*v(3) + v(4))/(12*h)
+			q(i) = p(i) ! 戻す
+		end do
+			! 数値微分を行う
+		! double precision :: v_l, v_h
+		! h = this%h
+		! q(:) = p(:) ! 入力データはいじらない
+		! do i = 1, np
+		! 	q(i) = p(i) + h
+		! 	v_h = this%objf(nr, nc, X, y, np, q, nhp, hp)
+		! 	q(i) = p(i) - h
+		! 	v_l = this%objf(nr, nc, X, y, np, q, nhp, hp)
+		! 	g(i) = (v_h - v_l)/(2*h)
+		! 	q(i) = p(i) ! 戻す
+		! end do
+
+	end subroutine
 
 end module
