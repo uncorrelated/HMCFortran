@@ -6,7 +6,8 @@ export("log_ml", "log_BF", "gelman.diag",
        "hmc.mlogit", "log_BF.mlogit",
        "hmc.poisson_exp", "log_BF.poisson", "predict.poisson", 
        "hmc.usrfunc", 
-       "hmc.blm.imp", "log_BF.blm.imp", "predict.blm.imp")
+       "hmc.blm.imp", "log_BF.blm.imp", "predict.blm.imp",
+       "hmc.blogit.imp", "log_BF.blogit.imp", "predict.blogit.imp")
 useDynLib("hmcfortran")
 S3method("plot", "hmc_f")
 S3method("mean", "hmc_f")
