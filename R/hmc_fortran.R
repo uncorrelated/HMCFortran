@@ -6,7 +6,7 @@ set_seeds <- function(seed, nchains){
 	seed
 }
 
-adjst_epsilons <- function(epsilons, L, H){
+adjust_epsilons <- function(epsilons, L, H){
 	if(!is.null(epsilons)) return(epsilons)
 	w <- sqrt(diag(solve(-H)))
 	as.double(w) / L
@@ -142,7 +142,7 @@ hmc.blm <- function(frml, ig.alpha, ig.beta, mu, Sigma, data = NULL,
 	r_optim <- list(p = r_optim[[6]], f = r_optim[[9]], h = matrix(r_optim[[10]], np), info = r_optim[[11]])
 
 	init.p <- r_optim$p
-	epsilons <- adjst_epsilons(epsilons, L, r_optim$h)
+	epsilons <- adjust_epsilons(epsilons, L, r_optim$h)
 
 	st <- system.time({
 		# 並行処理の準備
@@ -267,7 +267,7 @@ hmc.blogit <- function(frml, beta.mu, beta.Sigma, data = NULL,
 	r_optim <- list(p = r_optim[[6]], f = r_optim[[9]], h = matrix(r_optim[[10]], np), info = r_optim[[11]])
 
 	init.p <- r_optim$p
-	epsilons <- adjst_epsilons(epsilons, L, r_optim$h)
+	epsilons <- adjust_epsilons(epsilons, L, r_optim$h)
 
 	st <- system.time({
 		# 並行処理の準備
@@ -390,7 +390,7 @@ hmc.ologit <- function(frml, beta.mu, beta.Sigma, gamma.mu, gamma.Sigma, data = 
 	r_optim <- list(p = r_optim[[6]], f = r_optim[[9]], h = matrix(r_optim[[10]], np), info = r_optim[[11]])
 
 	init.p <- r_optim$p
-	epsilons <- adjst_epsilons(epsilons, L, r_optim$h)
+	epsilons <- adjust_epsilons(epsilons, L, r_optim$h)
 
 	st <- system.time({
 		# 並行処理の準備
@@ -554,7 +554,7 @@ hmc.mlogit <- function(frml_mnl = NULL, frml_cnd = NULL, mu, Sigma, data = NULL,
 	r_optim <- list(p = r_optim[[6]], f = r_optim[[11]], h = matrix(r_optim[[12]], np), info = r_optim[[13]])
 
 	init.p <- r_optim$p
-	epsilons <- adjst_epsilons(epsilons, L, r_optim$h)
+	epsilons <- adjust_epsilons(epsilons, L, r_optim$h)
 
 	st <- system.time({
 		# 並行処理の準備
@@ -682,7 +682,7 @@ hmc.poisson_exp <- function(frml, beta.mu, beta.Sigma, data = NULL,
 	r_optim <- list(p = r_optim[[6]], f = r_optim[[9]], h = matrix(r_optim[[10]], np), info = r_optim[[11]])
 
 	init.p <- r_optim$p
-	epsilons <- adjst_epsilons(epsilons, L, r_optim$h)
+	epsilons <- adjust_epsilons(epsilons, L, r_optim$h)
 
 	st <- system.time({
 		# 並行処理の準備
@@ -794,7 +794,7 @@ hmc.usrfunc <- function(init.p, func0, grad0 = NULL, ..., h = 1e-6, N = 3000, BI
 		as.integer(optim.param$nbd), as.double(optim.param$u), as.double(optim.param$l))
 	names(r_optim) <- c("p", "f", "h", "info")
 	init.p <- r_optim[[1]]
-	epsilons <- adjst_epsilons(epsilons, L, r_optim[[3]])
+	epsilons <- adjust_epsilons(epsilons, L, r_optim[[3]])
 
 	st <- system.time({
 		# 並行処理の準備

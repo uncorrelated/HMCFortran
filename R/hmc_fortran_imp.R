@@ -37,7 +37,7 @@ hmc.blm.imp <- function(frml, ig.alpha, ig.beta, mu, Sigma, X_mu, X_mu_Sigma, fr
 		as.double(0), as.double(matrix(0, np, np)), integer(1), NAOK = TRUE)
 	r_optim <- list(p = r_optim[[7]], f = r_optim[[10]], h = matrix(r_optim[[11]], np), info = r_optim[[12]])
 	init.p <- r_optim$p
-	epsilons <- adjst_epsilons(epsilons, L, r_optim$h)
+	epsilons <- adjust_epsilons(epsilons, L, r_optim$h)
 
 	st <- system.time({
 		# 並行処理の準備
@@ -175,7 +175,7 @@ hmc.blogit.imp <- function(frml, beta.mu, beta.Sigma, X_mu, X_mu_Sigma, frml.aux
 	r_optim <- list(p = r_optim[[7]], f = r_optim[[10]], h = matrix(r_optim[[11]], np), info = r_optim[[12]], X = X, X.imp = matrix(r_optim[[4]], nrow(X)))
 
 	init.p <- r_optim$p
-	epsilons <- adjst_epsilons(epsilons, L, r_optim$h)
+	epsilons <- adjust_epsilons(epsilons, L, r_optim$h)
 
 	st <- system.time({
 		# 並行処理の準備
