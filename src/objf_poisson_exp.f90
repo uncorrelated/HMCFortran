@@ -110,7 +110,7 @@ module poisson_exp
             !$omp do private(i)
             do j = 1, nr
                 do i = 1, ss
-                    y(i + nr*(j - 1)) = dexp(sum(X(j, :) * P(i, :)))
+                    y(i + ss*(j - 1)) = dexp(sum(X(j, :) * P(i, :)))
                 end do
             end do
             !$omp end do

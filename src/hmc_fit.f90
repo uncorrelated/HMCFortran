@@ -407,6 +407,7 @@ module hmc
 	subroutine maximum_likelihood_method(this, nr, nc, X, y, np, p_lbfgsb, nhp, hp, f, h, info)
 		use lbfgsb_module
 		use iso_fortran_env, only: output_unit
+		use ieee_arithmetic
 		implicit none
 		class(model), intent(inout) :: this
 		integer, intent(in) :: nr, nc, np, nhp
@@ -425,12 +426,13 @@ module hmc
 		logical :: lsave(4)
 		integer :: isave(44)
 		double precision :: f
+		double precision, dimension(np) :: g
 		double precision :: dsave(29)
 		integer, allocatable :: nbd(:), iwa(:)
 		double precision, allocatable :: l(:), u(:), wa(:)
 	!!! Hessianの計算用
 		double precision, dimension(np) :: p_a, p_b
-		double precision, dimension(np) :: g, g_a, g_b
+		double precision, dimension(np) :: g_a, g_b
 		double precision, dimension(np, np) :: h
 
 		! L-BFGS-Bの計算用の領域を確保
@@ -441,21 +443,29 @@ module hmc
 		! 上限と下限を設定
 		call this%plimit(np, nbd, l, u)
 
+		! 目的関数とグラディエントの符号は逆にしておく
 		f = -this%objf(nr, nc, X, y, np, p_lbfgsb, nhp, hp)
 		call this%objfg(nr, nc, X, y, np, p_lbfgsb, nhp, hp, g)
 		g = -g
 
 		task = 'START'
 		do while(task(1:2)=='FG'.or.task=='NEW_X'.or.task=='START')
-		call setulb ( np, m, p_lbfgsb, l, u, nbd, f, g, factr, pgtol, &
-						wa, iwa, task, iprint,&
-						csave, lsave, isave, dsave, &
-						iteration_file = 'driver1_output.txt' )
-		if (task(1:2) == 'FG') then
-		! 符号を逆にしておく
-			f = -this%objf(nr, nc, X, y, np, p_lbfgsb, nhp, hp)
-			call this%objfg(nr, nc, X, y, np, p_lbfgsb, nhp, hp, g)
-			g = -g
+			call setulb ( np, m, p_lbfgsb, l, u, nbd, f, g, factr, pgtol, &
+				wa, iwa, task, iprint,&
+				csave, lsave, isave, dsave, &
+				iteration_file = 'driver1_output.txt' )
+			if (task(1:2) == 'FG') then
+				f = -this%objf(nr, nc, X, y, np, p_lbfgsb, nhp, hp)
+				if(ieee_is_finite(f)) then
+					call this%objfg(nr, nc, X, y, np, p_lbfgsb, nhp, hp, g)
+					g = -g
+				else
+					! 目的関数からNAやInfが戻ったときの処理
+					! 最適値にならない大きな値を入れる/大きすぎるとL-BFGS-Bが最適化しない
+					f = 1.0d15
+					! 一次元探索の途中でNAやInfになるパラメーターが指定されるのか、
+					! グラディエントは試した限りそのままで無問題
+				end if
 			end if
 		end do
 
