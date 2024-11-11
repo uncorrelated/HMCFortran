@@ -5,11 +5,13 @@ module bayesian_imp_lm
     type, extends(blm) :: blm_imp
         type(impinfo) :: imp
         integer :: nev, nmu ! 回帰に用いる説明変数の数, 補定に用いる変数の数
+		! procedure(initialize_imp), pointer :: initialize => initialize_imp
         contains
             procedure :: objf => objf_imp
             procedure :: objfg => objfg_imp
             procedure :: lg_marginal_prior => lg_marginal_prior_imp
             procedure :: predict => predict_imp
+            procedure :: initialize => initialize_imp
     end type
     contains
         double precision function objf_imp(this, nr, nc, X, y, np, p, nhp, hp) result(r)
@@ -104,4 +106,15 @@ module bayesian_imp_lm
 
         end subroutine
 
+        subroutine initialize_imp(this, nr, nc, nev, X)
+			implicit none
+			class(blm_imp), intent(inout) :: this
+            integer, intent(in) :: nr, nc, nev
+            double precision, dimension(nr, nc), intent(inout) :: X
+        
+            this%h = 1d-5
+            this%nev = nev ! 推定に用いる変数の数
+            this%nmu = nc - 1 ! 補定に用いる変数の数
+            call this%imp%initialize(nr, nc - 1, X(:, 2:nc))
+        end subroutine
 end module

@@ -1,17 +1,3 @@
-subroutine init_imp(this, nr, nc, nev, X)
-	use bayesian_imp_lm
-	implicit none
-	integer, intent(in) :: nr, nc, nev
-	double precision, dimension(nr, nc), intent(inout) :: X
-	type(blm_imp) :: this
-
-	this%h = 1d-5
-	this%nev = nev ! 推定に用いる変数の数
-	this%nmu = nc - 1 ! 補定に用いる変数の数
-	call this%imp%initialize(nr, nc - 1, X(:, 2:nc))
-end subroutine
-
-
 subroutine hmc_fit_bayesian_imp_lm(nr, nc, nev, X, y, N, theta_sample, np, theta_init, nhp, hp, &
 	epsilons, adjustEpsilonsN, L, randlength, Sigma, constrain, seed, accept_r)
 	use bayesian_imp_lm
@@ -28,7 +14,7 @@ subroutine hmc_fit_bayesian_imp_lm(nr, nc, nev, X, y, N, theta_sample, np, theta
 	double precision, intent(out) :: accept_r
 	type(blm_imp) :: this
 
-	call init_imp(this, nr, nc, nev, X)
+	call this%initialize(nr, nc, nev, X)
 	call this%fit(nr, nc, X, y, N, theta_sample, np, theta_init, nhp, hp, &
 		epsilons, adjustEpsilonsN, L, randlength, Sigma, constrain, seed, accept_r)
 	call this%imp%finalize
@@ -48,7 +34,7 @@ subroutine optim_bayesian_imp_lm(nr, nc, nev, X, y, np, p, nhp, hp, f, h, info)
 	integer, intent(out) :: info
 	type(blm_imp) :: this
 
-	call init_imp(this, nr, nc, nev, X)
+	call this%initialize(nr, nc, nev, X)
 	call this%optim(nr, nc, X, y, np, p, nhp, hp, f, h, info)
 	call this%imp%finalize
 
@@ -66,7 +52,7 @@ subroutine log_ml_bayesian_imp_lm(nr, nc, nev, X, y, np, p, nhp, hp, r, info)
 	integer, intent(out) :: info
 	type(blm_imp) :: this
 
-	call init_imp(this, nr, nc, nev, X)
+	call this%initialize(nr, nc, nev, X)
 	call this%la_log_ml(nr, nc, X, y, np, p, nhp, hp, r, info)
 	call this%imp%finalize
 
@@ -85,7 +71,7 @@ subroutine bayes_factor_imp_lm(nr, nc, nev, X, y, ns, np, sample, nhp, hp, ncnst
 	double precision, intent(out) :: r
 	type(blm_imp) :: this
 
-	call init_imp(this, nr, nc, nev, X)
+	call this%initialize(nr, nc, nev, X)
 	r = this%log_sd_bf(nr, nc, X, y, ns, np, sample, nhp, hp, ncnst, pcnst, cnst)
 	call this%imp%finalize
 
@@ -100,7 +86,7 @@ subroutine hmc_predict_imp_lm(nr, nc, nev, X, ss, np, P, y)
 	double precision, dimension(nr * ss), intent(out) :: y
 	type(blm_imp) :: this
 
-	call init_imp(this, nr, nc, nev, X)
+	call this%initialize(nr, nc, nev, X)
 	call this%predict(nr, nc, X, ss, np, P, y)
 	call this%imp%finalize
 
