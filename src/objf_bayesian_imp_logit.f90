@@ -27,22 +27,21 @@ module bayesian_imp_logit
 		double precision, allocatable, dimension(:) :: mu, mu_X
 		double precision, allocatable, dimension(:, :) :: iSigma_X
 		double precision :: llf_x
-		integer :: info, nmu
+		integer :: info
 
 		! 補定用のパラメーター
-		nmu = (this%nev - 1) + (nc - this%nev)
-		allocate(mu(nmu), mu_X(nmu), iSigma_X(nmu, nmu))
-		mu = p(1 + this%nev:this%nev + nmu)
+		allocate(mu(this%nmu), mu_X(this%nmu), iSigma_X(this%nmu, this%nmu))
+		mu = p(1 + this%nev:this%nev + this%nmu)
 		! 補定用パラメーターのハイパーパラメーター
-		mu_X = hp(1 + this%nev + this%nev**2:this%nev + this%nev**2 + nmu)
-		iSigma_X = reshape(hp(1 + this%nev + this%nev**2 + nmu:this%nev + this%nev**2 + nmu +  nmu**2), &
-			(/nmu, nmu/))
+		mu_X = hp(1 + this%nev + this%nev**2:this%nev + this%nev**2 + this%nmu)
+		iSigma_X = reshape(hp(1 + this%nev + this%nev**2 + this%nmu:this%nev + this%nev**2 + this%nmu +  this%nmu**2), &
+			(/this%nmu, this%nmu/))
 		! 補定をする/補定に使ったパラメーターの対数尤度を得る
-		call this%imp%impute(nr, nmu, X(:, 2:1 + nmu), mu, llf_x, r, info)
+		call this%imp%impute(nr, this%nmu, X(:, 2:1 + this%nmu), mu, llf_x, r, info)
 		! 線形回帰の目的関数を呼ぶ
 		r = r + this%logit%objf(nr, this%nev, X, y, this%nev, p, this%nev + this%nev**2, hp)
 		! 補定用パラメーターの対数化事前確率を足す
-		r = r + lg_dmvnorm_by_precision(nmu, mu, mu_X, iSigma_X)
+		r = r + lg_dmvnorm_by_precision(this%nmu, mu, mu_X, iSigma_X)
 
 	end function
 
