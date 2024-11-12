@@ -102,7 +102,8 @@ hmc.blm.imp <- function(frml, ig.alpha, ig.beta, mu, Sigma, X_mu, X_mu_Sigma, fr
 	# 事後分布の要約統計量
 	r$posterior <- list(
 		beta = list(mu = mean(r)[2:ncol(X)], Sigma = vcov(r)[2:ncol(X), 2:ncol(X)]),
-		igamma = list(mean = mean(r)[[1]], var = max(1, vcov(r)[1, 1]))
+		igamma = list(mean = mean(r)[[1]], var = max(1, vcov(r)[1, 1])),
+		X = list(mu = mean(r)[(2 + ncol(X)):np], Sigma = vcov(r)[(2 + ncol(X)):np, (2 + ncol(X)):np])
 	)
 	r$posterior$igamma$alpha <- with(r$posterior$igamma, mean^2 / var + 2)
 	r$posterior$igamma$beta <- with(r$posterior$igamma, mean*(alpha - 1))
@@ -239,7 +240,10 @@ hmc.blogit.imp <- function(frml, beta.mu, beta.Sigma, X_mu, X_mu_Sigma, frml.aux
 		seed = seed)
 
 	# 事後分布の要約統計量
-	r$posterior <- list(beta = list(mu = mean(r), Sigma = vcov(r)))
+	r$posterior <- list(
+		beta = list(mu = mean(r)[1:ncol(X)], Sigma = vcov(r)[1:ncol(X), 1:ncol(X)]), 
+		X = list(mu = mean(r)[(1 + ncol(X)):np], Sigma = vcov(r)[(1 + ncol(X)):np, (1 + ncol(X)):np]) 
+	)
 
 	r
 }
@@ -375,7 +379,10 @@ hmc.poisson_exp.imp <- function(frml, beta.mu, beta.Sigma, X_mu, X_mu_Sigma, frm
 		seed = seed)
 
 	# 事後分布の要約統計量
-	r$posterior <- list(beta = list(mu = mean(r), Sigma = vcov(r)))
+	r$posterior <- list(
+		beta = list(mu = mean(r)[1:ncol(X)], Sigma = vcov(r)[1:ncol(X), 1:ncol(X)]), 
+		X = list(mu = mean(r)[(1 + ncol(X)):np], Sigma = vcov(r)[(1 + ncol(X)):np, (1 + ncol(X)):np])
+	)
 
 	r
 }
