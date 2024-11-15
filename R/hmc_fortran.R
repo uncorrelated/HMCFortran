@@ -455,10 +455,10 @@ hmc.ologit <- function(frml, beta.mu, beta.Sigma, gamma.mu, gamma.Sigma, data = 
 		seed = seed)
 
 	# 事後分布の要約統計量
-	# r$posterior <- list(
-	# 	beta = list(mu = mean(r)[1:ncol(X)], Sigma = vcov(r)[1:ncol(X), 1:ncol(X)]),
-	# 	gamma = list(mu = mean(r)[(1 + ncol(X)):np], Sigma = vcov(r)[(1 + ncol(X)):np, (1 + ncol(X)):np]),
-	# )
+	r$posterior <- list(
+		beta = list(mu = mean(r)[1:ncol(X)], Sigma = vcov(r)[1:ncol(X), 1:ncol(X)]),
+		gamma = list(mu = mean(r)[(1 + ncol(X)):np], Sigma = vcov(r)[(1 + ncol(X)):np, (1 + ncol(X)):np])
+	)
 
 	r
 }
