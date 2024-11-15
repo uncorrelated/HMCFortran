@@ -8,6 +8,7 @@ export("log_ml", "log_BF", "gelman.diag",
        "hmc.usrfunc", 
        "hmc.blm.imp", "log_BF.blm.imp", "predict.blm.imp",
        "hmc.blogit.imp", "log_BF.blogit.imp", "predict.blogit.imp",
+       "hmc.ologit.imp", "log_BF.ologit.imp", "predict.ologit.imp",
        "hmc.poisson_exp.imp", "log_BF.poisson.imp", "predict.poisson.imp")
 useDynLib("hmcfortran")
 S3method("plot", "hmc_f")
@@ -34,5 +35,7 @@ S3method("log_BF", "blogit.imp")
 S3method("predict", "blogit.imp")
 S3method("log_BF", "poisson.imp")
 S3method("predict", "poisson.imp")
+S3method("log_BF", "ologit.imp")
+S3method("predict", "ologit.imp")
 S3method("gelman.diag", "hmc_f", gelman.diag.hmc_f)
 S3method("gelman.diag", "mcmc.list", gelman.diag.mcmc.list)
