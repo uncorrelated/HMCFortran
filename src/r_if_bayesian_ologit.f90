@@ -68,7 +68,7 @@ subroutine bayes_factor_ologit(nr, nc, X, y, ns, np, sample, nhp, hp, ncnst, pcn
 	double precision, intent(out) :: r
 	type(ologit) :: this
 
-	this%nok_ans = nhp - nc
+	this%nok_ans = np - nc + 1
 	r = this%log_sd_bf(nr, nc, X, y, ns, np, sample, nhp, hp, ncnst, pcnst, cnst)
 end subroutine
 

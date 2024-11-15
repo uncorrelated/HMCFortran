@@ -161,7 +161,7 @@ module bayesian_ologit
 			double precision, allocatable, dimension(:, :) :: beta_sigma, gamma_sigma
 			integer, allocatable, dimension(:) :: beta_pcnst, gamma_pcnst
 
-			nc = nhp - this%nok_ans
+			nc = np - this%nok_ans + 1
 			nk = np - nc
 			allocate(beta_mu(nc), gamma_mu(nk), beta_sigma(nc, nc), gamma_sigma(nk, nk))
 
