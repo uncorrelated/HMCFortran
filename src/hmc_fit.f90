@@ -595,7 +595,7 @@ module hmc
 			log_w_n = lg_dmvnorm(np, sample(i, :), mu_sample, S_sample)
 			call subset(np, sample(i, :), nncnst, pncnst, vncnst)
 			log_w_d = lg_dmvnorm(nncnst, vncnst, w_mu, w_Sigma)
-			! なぜか条件付き確率が、条件無し確率より大きく計算されるときがある
+			! w(b1,b2|D)が、w(b2|D)より大きく計算されるときがある
 			! if(log_w_n > log_w_d) then
 			! 	write(*, *) "log_w_n", log_w_n, "log_w_d", log_w_d , "n - d", log_w_n - log_w_d, exp(log_w_n - log_w_d)
 			! 	write(*, *) "sample", sample(i, :)
