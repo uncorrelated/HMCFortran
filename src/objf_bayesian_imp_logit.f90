@@ -124,8 +124,8 @@ module bayesian_imp_logit
 	
 		this%h = 1d-5
 		this%nev = nev ! 推定に用いる変数の数
-		this%nmu = (nc - 1) ! 補定に用いる変数の数
-		call this%imp%initialize(nr, nc - 1, X(:, 2:nc))
+		this%nmu = nc - 1 ! 補定に用いる変数の数
+		call this%imp%initialize(nr, this%nmu, X(:, 2:nc))
 	end subroutine
 
 end module
