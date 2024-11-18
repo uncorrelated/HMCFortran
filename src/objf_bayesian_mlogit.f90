@@ -148,7 +148,7 @@ module bayesian_mlogit
             double precision, dimension(nr, this%nok), intent(out) :: Za_Xb
             double precision, dimension(nr, this%nok) :: Xb, ZaSum
             double precision, allocatable, dimension(:, :) :: beta ! , Za
-            double precision, allocatable, dimension(:) :: alpha
+            ! double precision, allocatable, dimension(:) :: alpha
             integer :: ncol_Z, ncol_X, cs_Z = 0, ce_Z = 0, cs_X = 0, ce_X = 0
             integer :: i, j, k
 
@@ -163,23 +163,22 @@ module bayesian_mlogit
             ncol_Z = this%nok * this%noc
             ncol_X = nc - ncol_Z
 
-            allocate(alpha(this%noc))
+            ! allocate(alpha(this%noc))
             allocate(beta(ncol_X, this%nok))
 
             ZaSum = 0
 
             if(0<ncol_Z) then
                 ! allocate(Za(nr, this%nok * this%noc))
-                do i = 1, this%noc
-                    alpha(i) = p(i)
-                end do
+                ! alpha(1:this%noc) = p(1:this%noc)
                 cs_Z = 1
                 ce_Z = this%nok * this%noc
                 do j = 1, this%noc
                     do k = 1, this%nok
                         do i = 1, nr
                             ! Za(i, k + (1-j)*this%nok) = alpha(j) * M(i, k + (1-j)*this%nok)
-                            ZaSum(i, k) = ZaSum(i, k) + alpha(j) * M(i, k + (1-j)*this%nok)
+                            ! alpha(j) == p(j)
+                            ZaSum(i, k) = ZaSum(i, k) + p(j) * ( M(i, k + (1-j)*this%nok) - M(i, 1 + (1-j)*this%nok) )
                         end do
                     end do
                 end do 

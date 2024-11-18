@@ -426,7 +426,6 @@ hmc.mlogit <- function(frml_mnl = NULL, frml_cnd = NULL, mu, Sigma, data = NULL,
 	if(!is.null(frml_cnd)){
 		frml_cnd <- update(frml_cnd, ~ . + 0)
 		Z <- model.matrix(frml_cnd, data)
-		Z <- Z - Z[, 1]
 		if(0 != ncol(Z) %% nok) stop("The number of kinds of responses, ", nok,", doesn't match to the formula of conditions: ", ncol(Z))
 		noc <- as.integer(ncol(Z)/nok) # conditionalな変数の数
 	} else {
