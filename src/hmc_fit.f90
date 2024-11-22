@@ -420,7 +420,7 @@ module hmc
 		integer :: i
 		double precision, parameter :: pi = 3.141592653589793115998
 	!!! L-BFGS-Bで利用する変数
-		integer, parameter :: m = 10, iprint = -1
+		integer, parameter :: m = 20, iprint = -1
 		double precision, parameter :: factr = 1.0d+7, pgtol = 1.0d-5
 		character(len=60) :: task, csave
 		logical :: lsave(4)
@@ -751,7 +751,8 @@ module hmc
 			g(i) = (- v(1) + 8*v(2) - 8*v(3) + v(4))/(12*h)
 			q(i) = p(i) ! 戻す
 		end do
-			! 数値微分を行う
+
+		! 数値微分を行う
 		! double precision :: v_l, v_h
 		! h = this%h
 		! q(:) = p(:) ! 入力データはいじらない
@@ -761,6 +762,13 @@ module hmc
 		! 	q(i) = p(i) - h
 		! 	v_l = this%objf(nr, nc, X, y, np, q, nhp, hp)
 		! 	g(i) = (v_h - v_l)/(2*h)
+		! 	if(g(i) /= g(i)) then
+		! 		write(0, *) "i", i
+		! 		write(0, *) "p", p
+		! 		write(0, *) "v_h", v_h, "v_l", v_l ! "objf(p)", this%objf(nr, nc, X, y, np, p, nhp, hp)
+		! 		write(0, *) "g(i)", g(i)
+		! 		g(i) = 0.0
+		! 	end if
 		! 	q(i) = p(i) ! 戻す
 		! end do
 
