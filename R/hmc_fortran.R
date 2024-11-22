@@ -432,7 +432,7 @@ hmc.mlogit <- function(frml_mnl = NULL, frml_cnd = NULL, mu, Sigma, data = NULL,
 		noc <- 0
 		Z <- NULL
 	}
-	M <- cbind(Z, X)
+	M <- cbind(X, Z)
 
 	noev <- (nok - 1)*ncol(X) + noc
 	if(noev != length(mu)) stop("The length of mu isn't same as the number of explanatory variables: ", noev)
@@ -448,12 +448,13 @@ hmc.mlogit <- function(frml_mnl = NULL, frml_cnd = NULL, mu, Sigma, data = NULL,
 	# サンプリングされた行列につける列名
 	options <- levels(model.response(df02))
 	colnames <- character((nok - 1)*ncol(X) + noc)
-	i <- 1
-	if(1<=noc) colnames[1:noc] <- sprintf("(Condition).%d", 1:noc)
+	k <- 0
 	if(2<=nok && 1<=ncol(X)) for(i in 2:nok){
-		j <- 1 + noc + (i - 2)*ncol(X)
-		colnames[j:(j + ncol(X) - 1)] <- sprintf("%s.%s", colnames(X), options[i])
+		j <- 1 +(i - 2)*ncol(X)
+		k <- j + ncol(X) - 1
+		colnames[j:k] <- sprintf("%s.%s", colnames(X), options[i])
 	}
+	if(1<=noc) colnames[(1 + k):(noc + k)] <- sprintf("(Condition).%d", 1:noc)
 
 	r_optim <- .Fortran("optim_bayesian_mlogit",
 		nrow(M), ncol(M), as.double(M), as.double(y),

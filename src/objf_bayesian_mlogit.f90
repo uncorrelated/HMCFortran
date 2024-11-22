@@ -50,9 +50,8 @@ module bayesian_mlogit
 
             a = lg_dmvnorm_by_precision(np, p, p_mu, p_sigma)
             if(.not. a==a) then
-                write(*, *) "lg_dmvnorm_by_precision(np, p, p_mu, p_sigma)", a
-                write(*, *) "p", p
-                call rexit("bayesian_mlogit")
+                write(0, *) "lg_dmvnorm_by_precision(np, p, p_mu, p_sigma)", a, "p", p
+                ! call rexit("bayesian_mlogit")
             end if
             objf = log_n - log_d + lg_dmvnorm_by_precision(np, p, p_mu, p_sigma)
 
@@ -89,11 +88,12 @@ module bayesian_mlogit
            ! conditonalな変数の係数の微分
             if(0 < this%noc) then
                 do j = 1, this%noc
-                    s = 1 + this%nok*(j - 1)
-                    e = this%nok*j
-                    g(j) = 0
+                    s = nc - this%nok*this%noc + 1 + (j - 1)*this%nok 
+                    e = s + this%nok - 1
+                    k = np - this%noc + j
+                    g(k) = 0
                     do i = 1, nr
-                        g(j) = g(j) + X(i, s - 1 + int(y(i))) - sum(X(i, s:e)*exp(Za_Xb(i, :))/denominator(i))
+                        g(k) = g(k) + X(i, s - 1 + int(y(i))) - sum(X(i, s:e)*exp(Za_Xb(i, :))/denominator(i))
                     end do
                 end do
             end if
@@ -101,12 +101,12 @@ module bayesian_mlogit
             ! individualな変数の係数の微分
             if(this%noc < np) then 
                 ! Mの中のXに該当する列の最初と最後
-                s = 1 + this%nok * this%noc
-                e = nc
+                s = 1
+                e = nc - this%nok*this%noc
                 ncol_X = e - s + 1
                 ! pの中のβに該当する部分の最初と最後
-                ps = 1 + this%noc
-                pe = np
+                ps = 1
+                pe = np - this%noc
                 ! beta(i, j) = p(i + (j-2)*this%nok)
                 ! j == 1のパラメーターは計算しないので省略
                 do j = 2, this%nok
@@ -119,7 +119,7 @@ module bayesian_mlogit
                 end do
             end if
 
-			call g_lg_dmvnorm_by_precision(np, p, p_mu, p_sigma, p_g_dmvnorm)
+            call g_lg_dmvnorm_by_precision(np, p, p_mu, p_sigma, p_g_dmvnorm)
             g = g + p_g_dmvnorm
 
         end subroutine
@@ -149,7 +149,7 @@ module bayesian_mlogit
             double precision, dimension(nr, this%nok) :: Xb, ZaSum
             double precision, allocatable, dimension(:, :) :: beta ! , Za
             ! double precision, allocatable, dimension(:) :: alpha
-            integer :: ncol_Z, ncol_X, cs_Z = 0, ce_Z = 0, cs_X = 0, ce_X = 0
+            integer :: ncol_Z, ncol_X, cs_X = 0, ce_X = 0
             integer :: i, j, k
 
             ! noc: conditionalな説明変数の数 → 〃 な係数の数
@@ -158,7 +158,7 @@ module bayesian_mlogit
             ! β: nok列☓ncol(X)行 
             ! Xβ: nok列
             ! Zα1は内積ではなくて、列で対応した積で、nok列になる
-            ! 引数pの前半はαのベクター後半はβのベクター
+            ! 引数pの前半はβのベクター後半はαのベクター
     
             ncol_Z = this%nok * this%noc
             ncol_X = nc - ncol_Z
@@ -171,14 +171,13 @@ module bayesian_mlogit
             if(0<ncol_Z) then
                 ! allocate(Za(nr, this%nok * this%noc))
                 ! alpha(1:this%noc) = p(1:this%noc)
-                cs_Z = 1
-                ce_Z = this%nok * this%noc
                 do j = 1, this%noc
                     do k = 1, this%nok
                         do i = 1, nr
-                            ! Za(i, k + (1-j)*this%nok) = alpha(j) * M(i, k + (1-j)*this%nok)
-                            ! alpha(j) == p(j)
-                            ZaSum(i, k) = ZaSum(i, k) + p(j) * ( M(i, k + (1-j)*this%nok) - M(i, 1 + (1-j)*this%nok) )
+                            ! Za(i, k + (j-1)*this%nok) = alpha(j) * M(i, ncol_X + k + (j-1)*this%nok)
+                            ! alpha(j) == p(ncol_X + j)
+                            ZaSum(i, k) = ZaSum(i, k) + p((this%nok - 1)*ncol_X + j) &
+                                * ( M(i, ncol_X + k + (j-1)*this%nok) - M(i, ncol_X + 1 + (j-1)*this%nok) )
                         end do
                     end do
                 end do 
@@ -187,16 +186,17 @@ module bayesian_mlogit
             if(0<ncol_X) then
                 do j = 2, this%nok
                     do i = 1, ncol_X
-                        beta(i, j) = p(i + this%noc + (j - 2)*ncol_X)
+                        beta(i, j) = p(i + (j - 2)*ncol_X)
                     end do
                 end do
                 beta(:, 1) = 0
 
-                cs_X = ce_Z + 1
-                ce_X = nc
+                cs_X = 1
+                ce_X = nc - ncol_Z
+
                 do j = 1, this%nok
                     do i = 1, nr
-                        Xb(i, j) = sum(M(i, cs_X:ce_X) * beta(:, j))                   
+                        Xb(i, j) = sum(M(i, cs_X:ce_X) * beta(:, j))
                     end do
                 end do 
             else
