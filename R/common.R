@@ -28,7 +28,7 @@ makeResultObj <- function(classname, r_sub, BI,
 	m <- apply(s, 2, mean)
 	sd <- apply(s, 2, sd)
 	q <- apply(s, 2, \(x) quantile(x, prob = c(0, alpha/2, 0.5, 1-alpha/2, 1), na.rm = TRUE)) 
-	colnames(q) <- names(m) <- colnames(s)
+	names(r_optim$p) <- colnames(q) <- names(m) <- colnames(s)
 	calc_la <- function(f, h, nr, np){
 		f + np/2*log(2*pi) - 1 / det(h) / 2 - np / 2 * log(nr)
 	}
