@@ -547,7 +547,7 @@ predict.ologit.imp <- function(r, X = NULL, P = NULL){
 		M <- cbind(X, A)
 	}
 	if(is.null(P)) P <- as.matrix(r$mcmc.list)
-	.Fortran("hmc_predict_imp_logit",
+	.Fortran("hmc_predict_imp_ologit",
 		nrow(M), ncol(M), ncol(r$input$X), as.double(M),
 		nrow(P), ncol(P), as.double(P),
 		double(nrow(M) * nrow(P) * (length(levels(r$input$ans)) - 1)), 
