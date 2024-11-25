@@ -1,16 +1,3 @@
-# 周辺尤度を返す
-log_ml.hmc_f <- function(r){
-	r$marginal.likelihood
-}
-
-log_ml.hmc_f <- function(r){
-	r$marginal.likelihood
-}
-
-gelman.diag <- function(obj) UseMethod("gelman.diag")
-gelman.diag.hmc_f <- function(r) coda::gelman.diag(r$mcmc.list)
-gelman.diag.mcmc.list <- function(r) coda::gelman.diag(r)
-
 ### 線形回帰で使う関数群 ###
 
 #

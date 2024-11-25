@@ -86,3 +86,16 @@ HPDinterval.hmc_f <- function(r, ...){
 
 log_ml <- function(obj) UseMethod("log_ml")
 log_BF <- function(obj, ...) UseMethod("log_BF")
+
+# 周辺尤度を返す
+log_ml.hmc_f <- function(r){
+	r$marginal.likelihood
+}
+
+log_ml.hmc_f <- function(r){
+	r$marginal.likelihood
+}
+
+gelman.diag <- function(obj) UseMethod("gelman.diag")
+gelman.diag.hmc_f <- function(r) coda::gelman.diag(r$mcmc.list)
+gelman.diag.mcmc.list <- function(r) coda::gelman.diag(r)
