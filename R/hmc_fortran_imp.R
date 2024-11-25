@@ -1,5 +1,5 @@
 ### 補定処理あり ###
-hmc.blm.imp <- function(frml, ig.alpha, ig.beta, mu, Sigma, X_mu, X_mu_Sigma, frml.aux = NULL, data = NULL, 
+hmc.blm.imp <- function(frml, ig.alpha, ig.beta, beta.mu, beta.Sigma, X_mu, X_mu_Sigma, frml.aux = NULL, data = NULL, 
 	N = 3000, BI = as.integer(N*0.1), adjustSpan =  0, L = 20, epsilons = NULL, nchains = 2, seed = NULL){
 
 	seed <- set_seeds(seed, nchains)
@@ -20,14 +20,14 @@ hmc.blm.imp <- function(frml, ig.alpha, ig.beta, mu, Sigma, X_mu, X_mu_Sigma, fr
 	init.p <- c(0.5, runif(nev), X_mu)
 	np <- length(init.p)
 
-	if(length(mu) != nev) stop("The length of mu is wrong.")
-	if(!is.matrix(Sigma)) stop("Sigma must be a matrix.")
-	if(nev != ncol(Sigma) || nev != nrow(Sigma)) stop("The length of Sigma is wrong.")
+	if(length(beta.mu) != nev) stop("The length of beta.mu is wrong.")
+	if(!is.matrix(beta.Sigma)) stop("beta.Sigma must be a matrix.")
+	if(nev != ncol(beta.Sigma) || nev != nrow(beta.Sigma)) stop("The length of beta.Sigma is wrong.")
 	if(length(X_mu) != n_X_mu) stop("The length of n_X_mu is wrong.")
 	if(!is.matrix(X_mu_Sigma)) stop("X_mu_Sigma must be a matrix.")
 	if(n_X_mu != ncol(X_mu_Sigma) || n_X_mu != nrow(X_mu_Sigma)) stop("The length of X_mu_Sigma is wrong.")
 
-	hp <- c(ig.alpha, ig.alpha, mu, chol2inv(chol(Sigma)), X_mu, chol2inv(chol(X_mu_Sigma)))
+	hp <- c(ig.alpha, ig.alpha, beta.mu, chol2inv(chol(beta.Sigma)), X_mu, chol2inv(chol(X_mu_Sigma)))
 	nhp <- length(hp)
 
 	r_optim <- .Fortran("optim_bayesian_imp_lm",
@@ -554,24 +554,24 @@ predict.ologit.imp <- function(r, X = NULL, P = NULL){
 		NAOK = TRUE)[[7]]
 }
 
-hmc.mlogit.imp <- function(frml_mnl = NULL, frml_cnd = NULL, beta.mu, beta.Sigma, 
+hmc.mlogit.imp <- function(frml.mnl = NULL, frml.cnd = NULL, beta.mu, beta.Sigma, 
 	X_mu, X_mu_Sigma, frml.aux = NULL, data = NULL, 
-	N = 9000, BI = as.integer(N*0.2), adjustSpan =  0, L = 20, epsilons = NULL, nchains = 2, seed = NULL){
+	N = 3000, BI = as.integer(N*0.2), adjustSpan =  0, L = 20, epsilons = NULL, nchains = 2, seed = NULL){
 
 	seed = set_seeds(seed, nchains)
 
-	if(is.null(frml_mnl)) stop("Specify a multinominal logit model. If there is no variable, write as like 'dependent ~ 1'.")
+	if(is.null(frml.mnl)) stop("Specify a multinominal logit model. If there is no variable, write as like 'dependent ~ 1'.")
 
 	# 応答変数を抜き出す
-	mf <- model.frame(frml_mnl, data, na.action = na.pass)
+	mf <- model.frame(frml.mnl, data, na.action = na.pass)
 	y <- as.double(model.response(mf))
 	nok <- as.integer(max(y)) # 選択肢の種類
 
 	# 説明変数を整理
 	X <- model.matrix(terms(mf), mf)
-	if(!is.null(frml_cnd)){
-		frml_cnd <- update(frml_cnd, ~ . + 0)
-		mf_cnd <- model.frame(frml_cnd, data, na.action = na.pass)
+	if(!is.null(frml.cnd)){
+		frml.cnd <- update(frml.cnd, ~ . + 0)
+		mf_cnd <- model.frame(frml.cnd, data, na.action = na.pass)
 		Z <- model.matrix(terms(mf_cnd), mf_cnd)
 		if(0 != ncol(Z) %% nok) stop("The number of kinds of responses, ", nok,", doesn't match to the formula of conditions: ", ncol(Z))
 		noc <- as.integer(ncol(Z)/nok) # conditionalな変数の数
@@ -677,8 +677,8 @@ hmc.mlogit.imp <- function(frml_mnl = NULL, frml_cnd = NULL, beta.mu, beta.Sigma
 
 	# 推定に使った変数
 	r$input <- list(
-		frml_mnl = frml_mnl,
-		frml_cnd = frml_cnd,
+		frml.mnl = frml.mnl,
+		frml.cnd = frml.cnd,
 		frml.aux = frml.aux,
 		M = M,
 		X = X,

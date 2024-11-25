@@ -5,15 +5,15 @@
 # data: データフレーム
 # ig.alpha: 分散の事前分布になる逆ガンマ関数のハイパーパラメーター
 # ig.beta: 〃
-# mu: 線形予測部分のパラメーターの事前分布になる多変量正規分布の平均を表すハイパーパラメーター
-# Sigma: 〃 の分散共分散行列を 〃
+# beta.mu: 線形予測部分のパラメーターの事前分布になる多変量正規分布の平均を表すハイパーパラメーター
+# beta.Sigma: 〃 の分散共分散行列を 〃
 # N: サンプリングする数
 # BI: Burin-in（捨てる初期部分）
 # adjustSpan: epsilonsを調整する期間/-1を入れると初期値の調整のみ行う
 # nchains: 生成する乱数列の本数
 # L, epsilons, seed: Hamiltonian Monte Carlo法のパラメーター
 #
-hmc.blm <- function(frml, ig.alpha, ig.beta, mu, Sigma, data = NULL, 
+hmc.blm <- function(frml, ig.alpha, ig.beta, beta.mu, beta.Sigma, data = NULL, 
 	N = 3000, BI = as.integer(N*0.1), adjustSpan = 0, L = 20, epsilons = NULL, nchains = 2, seed = NULL){
 
 	seed <- set_seeds(seed, nchains)
@@ -25,11 +25,11 @@ hmc.blm <- function(frml, ig.alpha, ig.beta, mu, Sigma, data = NULL,
 	init.p <- c(0.5, runif(ncol(X)))
 	np <- length(init.p)
 
-	if(length(mu) != np - 1) stop("The length of mu is wrong.")
-	if(!is.matrix(Sigma)) stop("Sigma must be a matrix.")
-	if(np - 1 != ncol(Sigma) || np - 1 != nrow(Sigma)) stop("The length of Sigma is wrong.")
+	if(length(beta.mu) != np - 1) stop("The length of beta.mu is wrong.")
+	if(!is.matrix(beta.Sigma)) stop("beta.Sigma must be a matrix.")
+	if(np - 1 != ncol(beta.Sigma) || np - 1 != nrow(beta.Sigma)) stop("The length of beta.Sigma is wrong.")
 
-	hp <- c(ig.alpha, ig.alpha, mu, chol2inv(chol(Sigma)))
+	hp <- c(ig.alpha, ig.alpha, beta.mu, chol2inv(chol(beta.Sigma)))
 	nhp <- length(hp)
 
 	r_optim <- .Fortran("optim_bayesian_lm",
@@ -385,34 +385,34 @@ predict.ologit <- function(r, X = NULL, P = NULL){
 ### 混合ロジットで使う関数群 ###
 
 #
-# frml_mnl: モデル式（多項ロジット部分）
-# frml_cnd: モデル式（条件付ロジット部分）
+# frml.mnl: モデル式（多項ロジット部分）
+# frml.cnd: モデル式（条件付ロジット部分）
 # data: データフレーム
-# mu: 線形予測部分のパラメーターの事前分布になる多変量正規分布の平均を表すハイパーパラメーター
-# Sigma: 〃 の分散共分散行列を 〃
+# beta.mu: 線形予測部分のパラメーターの事前分布になる多変量正規分布の平均を表すハイパーパラメーター
+# beta.Sigma: 〃 の分散共分散行列を 〃
 # N: サンプリングする数
 # BI: Burin-in（捨てる初期部分）
 # adjustSpan: epsilonsを調整する期間/-1を入れると初期値の調整のみ行う
 # nchains: 生成する乱数列の本数
 # L, epsilons, seed: Hamiltonian Monte Carlo法のパラメーター
 #
-hmc.mlogit <- function(frml_mnl = NULL, frml_cnd = NULL, mu, Sigma, data = NULL, 
-	N = 9000, BI = as.integer(N*0.2), adjustSpan = 0, L = 20, epsilons = NULL, nchains = 2, seed = NULL){
+hmc.mlogit <- function(frml.mnl = NULL, frml.cnd = NULL, beta.mu, beta.Sigma, data = NULL, 
+	N = 3000, BI = as.integer(N*0.2), adjustSpan = 0, L = 20, epsilons = NULL, nchains = 2, seed = NULL){
 
 	seed = set_seeds(seed, nchains)
 
-	if(is.null(frml_mnl)) stop("Specify a multinominal ligit model. If there is no variable, write as like 'dependent ~ 1'.")
+	if(is.null(frml.mnl)) stop("Specify a multinominal ligit model. If there is no variable, write as like 'dependent ~ 1'.")
 
 	# 応答変数を抜き出す
-	df02 <- model.frame(frml_mnl, data)
+	df02 <- model.frame(frml.mnl, data)
 	y <- as.double(model.response(df02))
 	nok <- as.integer(max(y)) # 選択肢の種類
 
 	# 説明変数を整理
 	X <- model.matrix(terms(df02), df02)
-	if(!is.null(frml_cnd)){
-		frml_cnd <- update(frml_cnd, ~ . + 0)
-		Z <- model.matrix(frml_cnd, data)
+	if(!is.null(frml.cnd)){
+		frml.cnd <- update(frml.cnd, ~ . + 0)
+		Z <- model.matrix(frml.cnd, data)
 		if(0 != ncol(Z) %% nok) stop("The number of kinds of responses, ", nok,", doesn't match to the formula of conditions: ", ncol(Z))
 		noc <- as.integer(ncol(Z)/nok) # conditionalな変数の数
 	} else {
@@ -422,14 +422,14 @@ hmc.mlogit <- function(frml_mnl = NULL, frml_cnd = NULL, mu, Sigma, data = NULL,
 	M <- cbind(X, Z)
 
 	noev <- (nok - 1)*ncol(X) + noc
-	if(noev != length(mu)) stop("The length of mu isn't same as the number of explanatory variables: ", noev)
-	if(noev != ncol(Sigma)) stop("The nummber of columns of Sigma isn't same as the number of explanatory variables:", noev)
-	if(noev != nrow(Sigma)) stop("The nummber of rows of Sigma isn't same as the number of explanatory variables:", noev)
+	if(noev != length(beta.mu)) stop("The length of beta.mu isn't same as the number of explanatory variables: ", noev)
+	if(noev != ncol(beta.Sigma)) stop("The nummber of columns of beta.Sigma isn't same as the number of explanatory variables:", noev)
+	if(noev != nrow(beta.Sigma)) stop("The nummber of rows of beta.Sigma isn't same as the number of explanatory variables:", noev)
 
 	np <- as.integer(noc + ncol(X)*(nok - 1))
 	init.p <- seq(-2.0, 2.0, length.out = np)
 
-	hp <- c(mu, chol2inv(chol(Sigma)))
+	hp <- c(beta.mu, chol2inv(chol(beta.Sigma)))
 	nhp <- length(hp)
 
 	# サンプリングされた行列につける列名
@@ -502,8 +502,8 @@ hmc.mlogit <- function(frml_mnl = NULL, frml_cnd = NULL, mu, Sigma, data = NULL,
 
 	# 推定に使った変数
 	r$input <- list(
-		frml_mnl = frml_mnl,
-		frml_cnd = frml_cnd,
+		frml.mnl = frml.mnl,
+		frml.cnd = frml.cnd,
 		M = M,
 		X = X,
 		Z = Z,
