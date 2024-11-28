@@ -14,7 +14,7 @@ dSFMT_if_src=$(addprefix $(dSFMT_if_path), $(patsubst %.o, %.F90, $(dSFMT_if_obj
 dSFMT=$(dSFMT_c_obj) $(dSFMT_if_obj) $(dSFMT_if_c_obj)
 DDSFMT_MEXP=-DDSFMT_MEXP=19937
 lbfgsb_path=$(SHSRC)/lbfgsb/src/
-lbfgsb_files=lbfgsb_blas_module.F90 lbfgsb_kinds_module.F90 lbfgsb_linpack_module.f90 lbfgsb.f90
+lbfgsb_files=lbfgsb_kinds_module.F90 lbfgsb_blas_module.F90 lbfgsb_linpack_module.f90 lbfgsb.f90
 lbfgsb_src=$(addprefix $(lbfgsb_path), $(lbfgsb_files))
 lbfgsb_obj=$(patsubst %.f90, %.o, $(patsubst %.F90, %.o, $(lbfgsb_files)))
 COMMON=hmc_fit.o mvnorm.o imputation.o $(dSFMT) $(lbfgsb_obj)
